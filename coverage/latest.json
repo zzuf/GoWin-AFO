@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "scope": "official-windows-sources",
   "generatorVersion": "0.1.0",
-  "manifestHash": "324928e11641165338e1897bc08fdc8507de23049cea359d0359a4b25758ae65",
+  "manifestHash": "c0928f42fababbfc3b9a4ce3175bc5921d2397aa5c805e07dcd91772e0e0d964",
   "totalSymbols": 522071,
   "bySource": {
     "microsoft-wdkmetadata": 27572,

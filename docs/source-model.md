@@ -23,10 +23,12 @@
 |---|---|---:|---:|---:|
 | `microsoft-win32metadata` | `Microsoft.Windows.SDK.Win32Metadata` | `71.0.26-preview` | `10.0.26100.0` | yes |
 | `microsoft-wdkmetadata` | `Microsoft.Windows.WDK.Win32Metadata` | `0.13.25-experimental` | `10.0.26100.0` | yes |
-| `windows-sdk-winrt` | SDK `UnionMetadata/Windows.winmd` | `10.0.26100.0` | `10.0.26100.0` | yes |
+| `windows-sdk-winrt` | `Microsoft.Windows.SDK.CPP` の UnionMetadata | `10.0.26100.7705` | `10.0.26100.0` | yes |
 | `windows-app-sdk` | `Microsoft.WindowsAppSDK` meta package | `2.5.1` | `10.0.26100.0` target | yes |
 
-Windows App SDK の lock は現在 meta package 本体だけを固定している。API を持つ推移 package 群の version/hash/provider 展開は未実装であり、インストール有無ではなく upstream 展開不足を示す `missing-upstream-metadata` sentinel として扱う。WinRT の `Windows.winmd` は固定した Windows SDK から取得する required source であり、欠落時は fetch/verify を失敗させる。
+Windows App SDK の lock は現在 meta package 本体だけを固定している。API を持つ推移 package 群の version/hash/provider 展開は未実装であり、インストール有無ではなく upstream 展開不足を示す `missing-upstream-metadata` sentinel として扱う。WinRT の `Windows.winmd` は固定した公式 NuGet から取得する required source であり、欠落時は fetch/verify を失敗させる。
+
+SDK の servicing revision が異なっても install directory は `10.0.26100.0` のままなので、ディレクトリ名だけでは入力を固定できない。WinRT は `Microsoft.Windows.SDK.CPP/10.0.26100.7705` の `c/UnionMetadata/10.0.26100.0/Windows.winmd` を使い、NuGet archive 全体の SHA-256 を lock する。従来の installed-SDK 入力と WinMD 本体の SHA-256 `e2dee80d011cb9fc1276a0bd9f244f7a58d5ca72fe906a56e90d61c68cf8601a` が一致することを確認済み。provider は lock の `files` から唯一の WinMD を選び、cache root のファイル名を仮定しない。
 
 ## 取得と検証
 

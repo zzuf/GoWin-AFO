@@ -54,7 +54,7 @@ defer factory.Release()
 
 ## Metadata projection
 
-WinRT provider は SDK `UnionMetadata/10.0.26100.0/Windows.winmd` を version/hash 固定した required input として扱う。現在の WinMD reader は WinRT interface、runtime class、delegate、generic arity、property、event の基本種別を inventory 化できるが、次の意味情報を完全には投影していない。
+WinRT provider は公式 `Microsoft.Windows.SDK.CPP/10.0.26100.7705` の `c/UnionMetadata/10.0.26100.0/Windows.winmd` を version/archive hash 固定した required input として扱う。ランナーに installed SDK があるかや、その servicing revision には依存しない。現在の WinMD reader は WinRT interface、runtime class、delegate、generic arity、property、event の基本種別を inventory 化できるが、次の意味情報を完全には投影していない。
 
 - default interface と activation factory attribute
 - contract version と deprecation

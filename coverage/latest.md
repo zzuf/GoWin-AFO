@@ -2,7 +2,7 @@
 
 Scope: `official-windows-sources`
 
-Manifest: `324928e11641165338e1897bc08fdc8507de23049cea359d0359a4b25758ae65`
+Manifest: `c0928f42fababbfc3b9a4ce3175bc5921d2397aa5c805e07dcd91772e0e0d964`
 
 Total inventoried symbols: **522071**
 
