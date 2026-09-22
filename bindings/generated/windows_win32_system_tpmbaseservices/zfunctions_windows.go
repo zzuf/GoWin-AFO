@@ -9,7 +9,7 @@
 package tpmbaseservices
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procTbsi_Create_Windows_Key = winabi.NewSystemProc("tbs.dll", "Tbsi_Create_Windows_Key")

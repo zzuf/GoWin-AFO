@@ -5,8 +5,8 @@ package kernel32
 import (
 	"testing"
 
-	"go-windows-api.local/bindings/win32/foundation"
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/bindings/win32/foundation"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 func TestNondestructiveKernel32Slice(t *testing.T) {

@@ -9,7 +9,7 @@
 package search
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procODBCGetTryWaitValue = winabi.NewSystemProc("ODBC32.dll", "ODBCGetTryWaitValue")

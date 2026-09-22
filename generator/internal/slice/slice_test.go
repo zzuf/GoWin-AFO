@@ -17,13 +17,30 @@ func projectRoot(t *testing.T) string {
 	return root
 }
 
-func TestRenderReconstructsCheckedInSlice(t *testing.T) {
-	root := projectRoot(t)
-	a, err := Render(root, "go-windows-api.local", "0.1.0")
+func projectModulePath(t *testing.T, root string) string {
+	t.Helper()
+	data, err := os.ReadFile(filepath.Join(root, "go.mod"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	b, err := Render(root, "go-windows-api.local", "0.1.0")
+	for _, line := range strings.Split(string(data), "\n") {
+		fields := strings.Fields(line)
+		if len(fields) == 2 && fields[0] == "module" {
+			return fields[1]
+		}
+	}
+	t.Fatal("module directive missing from go.mod")
+	return ""
+}
+
+func TestRenderReconstructsCheckedInSlice(t *testing.T) {
+	root := projectRoot(t)
+	module := projectModulePath(t, root)
+	a, err := Render(root, module, "0.1.0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := Render(root, module, "0.1.0")
 	if err != nil {
 		t.Fatal(err)
 	}

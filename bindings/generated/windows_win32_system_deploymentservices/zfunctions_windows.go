@@ -9,7 +9,7 @@
 package deploymentservices
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procWdsTransportClientShutdown = winabi.NewSystemProc("WDSTPTC.dll", "WdsTransportClientShutdown")

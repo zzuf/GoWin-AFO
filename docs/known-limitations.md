@@ -53,7 +53,7 @@
 
 ## Platform と配布
 
-- module path `go-windows-api.local` は公開前の仮 path である。public release 前に単一設定元の `go.mod` と生成 import を計画的に変更する必要がある。
+- module path は指定された repository に合わせ `github.com/zzuf/GoWin-AFO` に移行済み。GitHub への source 公開は stable API/release の保証ではなく、網羅率と ABI の制約は引き続き適用される。
 - optional な外部 SDK provider がない場合は `external-sdk-not-installed` として分類する。固定 Windows SDK/WinRT source は required なので欠落を fetch/verify failure にし、Windows App SDK の transitive API package 未展開は `missing-upstream-metadata` として区別する。
 
 - bindings/bridge/report/raw dump を全て stage してから順次 rename し、通常の書き込み error は全対象を rollback する（`ATOMIC-001` の通常失敗経路を改善）。rollback 自体が失敗した場合は backup を残し、その場所を error に含める。複数 rename の間の process crash/power loss を自動復旧する永続 journal は未実装（`ATOMIC-CRASH-001`）。その場合は残った `.winapigen-stage-*` の backup を確認して復旧し、再生成で整合性を検査する。

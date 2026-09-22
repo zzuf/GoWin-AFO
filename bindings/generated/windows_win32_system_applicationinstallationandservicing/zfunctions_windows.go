@@ -9,7 +9,7 @@
 package applicationinstallationandservicing
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procMsiCloseAllHandles = winabi.NewSystemProc("msi.dll", "MsiCloseAllHandles")

@@ -9,7 +9,7 @@
 package rpc
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procI_RpcSsDontSerializeContext = winabi.NewSystemProc("RPCRT4.dll", "I_RpcSsDontSerializeContext")

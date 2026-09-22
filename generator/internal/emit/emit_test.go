@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"go-windows-api.local/generator/internal/metadata"
-	"go-windows-api.local/generator/internal/normalize"
+	"github.com/zzuf/GoWin-AFO/generator/internal/metadata"
+	"github.com/zzuf/GoWin-AFO/generator/internal/normalize"
 )
 
 func fixtureInventory(t *testing.T) string {

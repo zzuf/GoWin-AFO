@@ -9,7 +9,7 @@
 package eventcollector
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procEcOpenSubscriptionEnum = winabi.NewSystemProc("WecApi.dll", "EcOpenSubscriptionEnum")

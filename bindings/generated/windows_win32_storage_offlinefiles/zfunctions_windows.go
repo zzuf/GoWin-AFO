@@ -9,7 +9,7 @@
 package offlinefiles
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procOfflineFilesStart = winabi.NewSystemProc("CSCAPI.dll", "OfflineFilesStart")

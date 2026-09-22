@@ -9,7 +9,7 @@
 package pointer
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procGetUnpredictedMessagePos = winabi.NewSystemProc("USER32.dll", "GetUnpredictedMessagePos")

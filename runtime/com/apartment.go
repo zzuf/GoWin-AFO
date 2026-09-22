@@ -3,7 +3,7 @@ package com
 import (
 	"runtime"
 
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 // COINIT is the native COM apartment initialization flag type.

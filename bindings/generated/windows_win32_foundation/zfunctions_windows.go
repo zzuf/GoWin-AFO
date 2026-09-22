@@ -9,7 +9,7 @@
 package foundation
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 	"runtime"
 	"unsafe"
 )

@@ -9,7 +9,7 @@
 package winrt
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procRoUninitialize = winabi.NewSystemProc("api-ms-win-core-winrt-l1-1-0.dll", "RoUninitialize")

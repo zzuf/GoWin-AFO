@@ -3,7 +3,7 @@ package metadata
 import (
 	"testing"
 
-	"go-windows-api.local/generator/internal/model"
+	"github.com/zzuf/GoWin-AFO/generator/internal/model"
 )
 
 func TestSafePureGoPInvokeGate(t *testing.T) {

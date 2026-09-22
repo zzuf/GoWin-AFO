@@ -9,7 +9,7 @@
 package identity
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procSslGetMaximumKeySize = winabi.NewSystemProc("SCHANNEL.dll", "SslGetMaximumKeySize")

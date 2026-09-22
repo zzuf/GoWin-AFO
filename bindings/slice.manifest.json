@@ -38,7 +38,7 @@
     },
     {
       "path": "bindings/wdk/nt/ztypes_nt.go",
-      "sha256": "b01ad1fcae1d1d8cd5d22540f291ebb7a315b0c327c5e203d089d862649d9198"
+      "sha256": "f3dda3d66cbf7346103d736206e0568af3f43e966cd74a73423b488080e9a0cb"
     },
     {
       "path": "bindings/win32/foundation/zavailability_types.go",
@@ -46,7 +46,7 @@
     },
     {
       "path": "bindings/win32/foundation/ztypes_base.go",
-      "sha256": "d99110c96114beea2d3328b4d37e7dfbf7e8481a3dc443ab8980d827f333e2f1"
+      "sha256": "b660ee2b8e408a8110b6926f1a949c5fe87fd047084516bcb45d9decd16499d2"
     },
     {
       "path": "bindings/win32/foundation/ztypes_union_386.go",
@@ -70,19 +70,19 @@
     },
     {
       "path": "bindings/win32/kernel32/zfunctions_kernel_windows.go",
-      "sha256": "2fa8750594ac90f98d80726548cbdafb75cdd89c71b30af0077ca5b0d1ac087f"
+      "sha256": "aebe1ac8cac56885e9ceb90b1ea6d5177ba24612c22a49397fcbefe8a6c02568"
     },
     {
       "path": "bindings/win32/kernel32/zfunctions_qpc_windows_386.go",
-      "sha256": "d06bebe2c3ea66c6a6ad0520d0d5fe55d816a356e21b9d696d1309852da3c6f2"
+      "sha256": "0dab9995f8bec27e808c27dcac680fcf1656519aa4e06941027f2147f90884e1"
     },
     {
       "path": "bindings/win32/kernel32/zfunctions_qpc_windows_64.go",
-      "sha256": "125c9fea168ebf65a67b818ea08cfc3358216e19077f20fc0e7422a6d8b72477"
+      "sha256": "6220ab71ba6995f92bc9a6da0da7a1d5f954f474fd2887041ae0a41f5dec9980"
     },
     {
       "path": "bindings/winrt/windows/foundation/zclasses_uri.go",
-      "sha256": "5f8ed0d4602b5ab7892452349d0bed067f14c3a789c9e5102a55e3244df26959"
+      "sha256": "fc0fa20095ce2882f796a52a03b61fda2664973bbfa5263ef7086d2b497f0c60"
     }
   ]
 }

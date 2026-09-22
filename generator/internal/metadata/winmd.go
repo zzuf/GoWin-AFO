@@ -9,7 +9,7 @@ import (
 
 	mswinmd "github.com/microsoft/go-winmd/winmd"
 
-	"go-windows-api.local/generator/internal/model"
+	"github.com/zzuf/GoWin-AFO/generator/internal/model"
 )
 
 type WinMDProvider struct{ SourceType string }

@@ -4,7 +4,7 @@ import (
 	"runtime"
 	"unsafe"
 
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 // CLSCTX is the native COM activation-context flags type.

@@ -9,7 +9,7 @@
 package tapi
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procLineSetAgentMeasurementPeriod = winabi.NewSystemProc("TAPI32.dll", "lineSetAgentMeasurementPeriod")

@@ -9,7 +9,7 @@
 package sensors
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procCollectionsListGetFillableCount = winabi.NewSystemProc("SensorsUtilsV2.dll", "CollectionsListGetFillableCount")

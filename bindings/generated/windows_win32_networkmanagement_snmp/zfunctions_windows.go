@@ -9,7 +9,7 @@
 package snmp
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procSnmpSetRetry = winabi.NewSystemProc("wsnmp32.dll", "SnmpSetRetry")

@@ -4,8 +4,8 @@ import (
 	"runtime"
 	"unsafe"
 
-	"go-windows-api.local/runtime/com"
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/com"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 // TrustLevel is the native WinRT trust level enum.

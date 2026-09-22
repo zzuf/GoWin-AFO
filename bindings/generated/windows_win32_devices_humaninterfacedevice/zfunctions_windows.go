@@ -9,7 +9,7 @@
 package humaninterfacedevice
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procJoyConfigChanged = winabi.NewSystemProc("WINMM.dll", "joyConfigChanged")

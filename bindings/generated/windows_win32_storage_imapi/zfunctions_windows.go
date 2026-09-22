@@ -9,7 +9,7 @@
 package imapi
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procMapStorageSCode = winabi.NewSystemProc("MAPI32.dll", "MapStorageSCode")

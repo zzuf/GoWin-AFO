@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"go-windows-api.local/generator/internal/metadata"
-	"go-windows-api.local/generator/internal/source"
+	"github.com/zzuf/GoWin-AFO/generator/internal/metadata"
+	"github.com/zzuf/GoWin-AFO/generator/internal/source"
 )
 
 func TestTypeLibraryInventory(t *testing.T) {

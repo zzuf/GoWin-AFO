@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"go-windows-api.local/generator/internal/model"
+	"github.com/zzuf/GoWin-AFO/generator/internal/model"
 )
 
 func TestInventoryASTWithoutHeaderRegex(t *testing.T) {

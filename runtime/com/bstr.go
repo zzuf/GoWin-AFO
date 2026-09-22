@@ -6,7 +6,7 @@ import (
 	"unicode/utf16"
 	"unsafe"
 
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var (

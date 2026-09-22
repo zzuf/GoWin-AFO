@@ -9,7 +9,7 @@
 package windowsandmessaging
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procDisableProcessWindowsGhosting = winabi.NewSystemProc("USER32.dll", "DisableProcessWindowsGhosting")

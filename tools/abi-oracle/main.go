@@ -9,7 +9,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"go-windows-api.local/tools/abi-oracle/internal/oracle"
+	"github.com/zzuf/GoWin-AFO/tools/abi-oracle/internal/oracle"
 )
 
 func main() {

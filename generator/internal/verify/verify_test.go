@@ -11,9 +11,9 @@ import (
 	"strings"
 	"testing"
 
-	"go-windows-api.local/generator/internal/metadata"
-	"go-windows-api.local/generator/internal/model"
-	"go-windows-api.local/generator/internal/normalize"
+	"github.com/zzuf/GoWin-AFO/generator/internal/metadata"
+	"github.com/zzuf/GoWin-AFO/generator/internal/model"
+	"github.com/zzuf/GoWin-AFO/generator/internal/normalize"
 )
 
 func repositoryRoot(t *testing.T) string {

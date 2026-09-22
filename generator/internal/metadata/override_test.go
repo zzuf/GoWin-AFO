@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"go-windows-api.local/generator/internal/model"
+	"github.com/zzuf/GoWin-AFO/generator/internal/model"
 )
 
 func TestOverrideRequiresEvidenceAndDetectsStaleBefore(t *testing.T) {

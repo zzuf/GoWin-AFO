@@ -5,7 +5,7 @@ package generator
 import (
 	"context"
 
-	"go-windows-api.local/generator/internal/source"
+	"github.com/zzuf/GoWin-AFO/generator/internal/source"
 )
 
 type SourceManager = source.Manager

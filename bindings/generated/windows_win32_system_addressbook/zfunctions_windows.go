@@ -9,7 +9,7 @@
 package addressbook
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procDeinitMapiUtil = winabi.NewSystemProc("MAPI32.dll", "DeinitMapiUtil")

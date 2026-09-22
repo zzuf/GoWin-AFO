@@ -9,7 +9,7 @@
 package dataexchange
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procDeleteAtom = winabi.NewSystemProc("KERNEL32.dll", "DeleteAtom")

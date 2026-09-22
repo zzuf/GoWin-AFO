@@ -9,7 +9,7 @@
 package restore
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procSRRemoveRestorePoint = winabi.NewSystemProc("SrClient.dll", "SRRemoveRestorePoint")

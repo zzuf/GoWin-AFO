@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"go-windows-api.local/generator/internal/emit"
-	"go-windows-api.local/generator/internal/slice"
+	"github.com/zzuf/GoWin-AFO/generator/internal/emit"
+	"github.com/zzuf/GoWin-AFO/generator/internal/slice"
 )
 
 func TestGenerateRecreatesReviewedSliceWithRootModule(t *testing.T) {

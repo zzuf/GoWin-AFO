@@ -9,7 +9,7 @@
 package audio
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procAuxGetNumDevs = winabi.NewSystemProc("WINMM.dll", "auxGetNumDevs")

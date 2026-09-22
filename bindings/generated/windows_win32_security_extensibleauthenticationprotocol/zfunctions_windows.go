@@ -9,7 +9,7 @@
 package extensibleauthenticationprotocol
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procEapHostPeerUninitialize = winabi.NewSystemProc("eappprxy.dll", "EapHostPeerUninitialize")

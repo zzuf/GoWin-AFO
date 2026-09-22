@@ -9,7 +9,7 @@
 package direct3d9
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procD3DPERF_EndEvent = winabi.NewSystemProc("d3d9.dll", "D3DPERF_EndEvent")

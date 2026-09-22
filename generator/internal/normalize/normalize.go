@@ -9,7 +9,7 @@ import (
 	"sort"
 	"strings"
 
-	"go-windows-api.local/generator/internal/model"
+	"github.com/zzuf/GoWin-AFO/generator/internal/model"
 )
 
 func StableID(s model.Symbol) string {

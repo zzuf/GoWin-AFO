@@ -1,4 +1,4 @@
-module go-windows-api.local
+module github.com/zzuf/GoWin-AFO
 
 go 1.26.0
 

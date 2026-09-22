@@ -7,7 +7,7 @@ import (
 	"io"
 	"os"
 
-	internalcoverage "go-windows-api.local/generator/internal/coverage"
+	internalcoverage "github.com/zzuf/GoWin-AFO/generator/internal/coverage"
 )
 
 type CoverageReport = internalcoverage.Report

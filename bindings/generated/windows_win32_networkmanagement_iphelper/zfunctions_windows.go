@@ -9,7 +9,7 @@
 package iphelper
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procGetFriendlyIfIndex = winabi.NewSystemProc("IPHLPAPI.dll", "GetFriendlyIfIndex")

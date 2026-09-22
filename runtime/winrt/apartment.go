@@ -3,7 +3,7 @@ package winrt
 import (
 	"runtime"
 
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 // RO_INIT_TYPE is the native WinRT apartment initialization type.

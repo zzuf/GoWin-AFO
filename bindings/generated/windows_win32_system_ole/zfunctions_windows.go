@@ -9,7 +9,7 @@
 package ole
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procOaEnablePerUserTLibRegistration = winabi.NewSystemProc("OLEAUT32.dll", "OaEnablePerUserTLibRegistration")

@@ -4,7 +4,7 @@ import (
 	"runtime"
 	"unsafe"
 
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 // IID_IUnknown is 00000000-0000-0000-C000-000000000046.

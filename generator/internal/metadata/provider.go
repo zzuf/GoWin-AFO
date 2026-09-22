@@ -4,8 +4,8 @@ package metadata
 import (
 	"context"
 
-	"go-windows-api.local/generator/internal/model"
-	"go-windows-api.local/generator/internal/source"
+	"github.com/zzuf/GoWin-AFO/generator/internal/model"
+	"github.com/zzuf/GoWin-AFO/generator/internal/source"
 )
 
 type Request struct {

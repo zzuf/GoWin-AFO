@@ -8,7 +8,7 @@ package foundation
 import (
 	"unsafe"
 
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 // CHAR is the native signed 8-bit character type.

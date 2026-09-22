@@ -9,7 +9,7 @@
 package alljoyn
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procAlljoyn_unity_set_deferred_callback_mainthread_only = winabi.NewSystemProc("MSAJApi.dll", "alljoyn_unity_set_deferred_callback_mainthread_only")

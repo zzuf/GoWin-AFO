@@ -9,7 +9,7 @@
 package debug
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procDebugBreak = winabi.NewSystemProc("KERNEL32.dll", "DebugBreak")

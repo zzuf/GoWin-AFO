@@ -3,7 +3,7 @@ package winrt
 import (
 	"errors"
 
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 // ErrParameterizedIIDUnsupported makes the current generic projection boundary

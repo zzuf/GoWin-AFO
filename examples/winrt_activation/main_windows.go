@@ -5,8 +5,8 @@ package main
 import (
 	"fmt"
 
-	foundation "go-windows-api.local/bindings/winrt/windows/foundation"
-	"go-windows-api.local/runtime/winrt"
+	foundation "github.com/zzuf/GoWin-AFO/bindings/winrt/windows/foundation"
+	"github.com/zzuf/GoWin-AFO/runtime/winrt"
 )
 
 func main() {

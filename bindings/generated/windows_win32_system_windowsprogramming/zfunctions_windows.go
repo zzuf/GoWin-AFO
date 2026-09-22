@@ -9,7 +9,7 @@
 package windowsprogramming
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procLocalCompact = winabi.NewSystemProc("KERNEL32.dll", "LocalCompact")

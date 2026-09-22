@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"strings"
 
-	"go-windows-api.local/generator/internal/model"
+	"github.com/zzuf/GoWin-AFO/generator/internal/model"
 )
 
 type OverrideDocument struct {

@@ -13,12 +13,12 @@ import (
 	"sort"
 	"strings"
 
-	internalcoverage "go-windows-api.local/generator/internal/coverage"
-	"go-windows-api.local/generator/internal/emit"
-	"go-windows-api.local/generator/internal/metadata"
-	"go-windows-api.local/generator/internal/model"
-	"go-windows-api.local/generator/internal/normalize"
-	"go-windows-api.local/generator/internal/slice"
+	internalcoverage "github.com/zzuf/GoWin-AFO/generator/internal/coverage"
+	"github.com/zzuf/GoWin-AFO/generator/internal/emit"
+	"github.com/zzuf/GoWin-AFO/generator/internal/metadata"
+	"github.com/zzuf/GoWin-AFO/generator/internal/model"
+	"github.com/zzuf/GoWin-AFO/generator/internal/normalize"
+	"github.com/zzuf/GoWin-AFO/generator/internal/slice"
 )
 
 const Version = "0.1.0"
@@ -354,7 +354,7 @@ func findProjectRoot() (string, error) {
 func modulePath(root string) string {
 	b, err := os.ReadFile(filepath.Join(root, "go.mod"))
 	if err != nil {
-		return "go-windows-api.local"
+		return "github.com/zzuf/GoWin-AFO"
 	}
 	for _, line := range strings.Split(string(b), "\n") {
 		f := strings.Fields(line)
@@ -362,7 +362,7 @@ func modulePath(root string) string {
 			return f[1]
 		}
 	}
-	return "go-windows-api.local"
+	return "github.com/zzuf/GoWin-AFO"
 }
 func generatedPackageCount(files map[string][]byte) int {
 	m := map[string]bool{}

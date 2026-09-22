@@ -9,7 +9,7 @@
 package wininet
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procInternetHangUp = winabi.NewSystemProc("WININET.dll", "InternetHangUp")

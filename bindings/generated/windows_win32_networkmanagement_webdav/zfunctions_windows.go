@@ -9,7 +9,7 @@
 package webdav
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procDavUnregisterAuthCallback = winabi.NewSystemProc("davclnt.dll", "DavUnregisterAuthCallback")

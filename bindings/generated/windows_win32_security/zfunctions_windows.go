@@ -9,7 +9,7 @@
 package security
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procGetSidLengthRequired = winabi.NewSystemProc("ADVAPI32.dll", "GetSidLengthRequired")

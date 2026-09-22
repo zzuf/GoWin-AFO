@@ -9,7 +9,7 @@
 package media
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procTimeGetTime = winabi.NewSystemProc("WINMM.dll", "timeGetTime")

@@ -9,7 +9,7 @@
 package dhcp
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procDhcpRemoveDNSRegistrations = winabi.NewSystemProc("dhcpcsvc.dll", "DhcpRemoveDNSRegistrations")

@@ -9,7 +9,7 @@
 package iscsidisc
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procClearPersistentIScsiDevices = winabi.NewSystemProc("ISCSIDSC.dll", "ClearPersistentIScsiDevices")

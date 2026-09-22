@@ -11,8 +11,8 @@ import (
 	"path/filepath"
 	"sort"
 
-	"go-windows-api.local/generator/internal/metadata"
-	"go-windows-api.local/generator/internal/model"
+	"github.com/zzuf/GoWin-AFO/generator/internal/metadata"
+	"github.com/zzuf/GoWin-AFO/generator/internal/model"
 )
 
 type JSONProvider struct{}

@@ -9,7 +9,7 @@
 package winsock
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procNtohs = winabi.NewSystemProc("WS2_32.dll", "ntohs")

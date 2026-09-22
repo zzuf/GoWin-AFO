@@ -6,8 +6,8 @@
 package foundation
 
 import (
-	"go-windows-api.local/runtime/winabi"
-	"go-windows-api.local/runtime/winrt"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winrt"
 )
 
 // RuntimeClassURI is the metadata name for Windows.Foundation.Uri.

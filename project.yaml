@@ -1,7 +1,7 @@
 schemaVersion: 1
 name: go-windows-api
-# With no pre-existing go.mod or Git remote, go.mod is the single authoritative
-# module-path setting. Replace go-windows-api.local before public release.
+# go.mod is the single authoritative module-path setting and matches the
+# owner-confirmed GitHub repository github.com/zzuf/GoWin-AFO.
 modulePathSource: go.mod
 generatorVersion: 0.1.0
 defaultABIProfile: windows-desktop

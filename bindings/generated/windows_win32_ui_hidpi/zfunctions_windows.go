@@ -9,7 +9,7 @@
 package hidpi
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procGetDpiForSystem = winabi.NewSystemProc("USER32.dll", "GetDpiForSystem")

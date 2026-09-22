@@ -3,7 +3,7 @@ package generator
 import (
 	"context"
 
-	internalverify "go-windows-api.local/generator/internal/verify"
+	internalverify "github.com/zzuf/GoWin-AFO/generator/internal/verify"
 )
 
 const ABIVerifierVersion = "0.1.0"

@@ -80,7 +80,7 @@ package main
 import (
 	"fmt"
 
-	threading "go-windows-api.local/bindings/generated/windows_win32_system_threading"
+	threading "github.com/zzuf/GoWin-AFO/bindings/generated/windows_win32_system_threading"
 )
 
 func main() {
@@ -91,9 +91,10 @@ func main() {
 }
 ```
 
-`go-windows-api.local` is the temporary module path because this directory had no
-pre-existing `go.mod` or Git remote. `go.mod` is the authoritative replacement
-point before publication.
+The module path is `github.com/zzuf/GoWin-AFO`, matching the confirmed GitHub
+repository. `go.mod` remains the authoritative source for generated imports.
+Publishing this source repository does not imply a stable API or full Windows
+API coverage.
 
 The raw layer preserves native names, widths, allocation, ownership, failure
 rules, and optional last-error values. It does not turn a nonzero last-error value

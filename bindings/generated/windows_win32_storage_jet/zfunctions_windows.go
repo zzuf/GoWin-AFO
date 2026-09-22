@@ -9,7 +9,7 @@
 package jet
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procJetStopService = winabi.NewSystemProc("ESENT.dll", "JetStopService")

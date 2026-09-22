@@ -9,7 +9,7 @@
 package p2p
 
 import (
-	"go-windows-api.local/runtime/winabi"
+	"github.com/zzuf/GoWin-AFO/runtime/winabi"
 )
 
 var procPeerDistServerCloseContentInformation = winabi.NewSystemProc("PeerDist.dll", "PeerDistServerCloseContentInformation")

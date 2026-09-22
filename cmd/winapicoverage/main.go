@@ -9,7 +9,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"go-windows-api.local/generator"
+	"github.com/zzuf/GoWin-AFO/generator"
 )
 
 func main() {

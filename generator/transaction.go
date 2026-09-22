@@ -13,10 +13,10 @@ import (
 	"sort"
 	"strings"
 
-	internalcoverage "go-windows-api.local/generator/internal/coverage"
-	"go-windows-api.local/generator/internal/emit"
-	"go-windows-api.local/generator/internal/model"
-	"go-windows-api.local/generator/internal/slice"
+	internalcoverage "github.com/zzuf/GoWin-AFO/generator/internal/coverage"
+	"github.com/zzuf/GoWin-AFO/generator/internal/emit"
+	"github.com/zzuf/GoWin-AFO/generator/internal/model"
+	"github.com/zzuf/GoWin-AFO/generator/internal/slice"
 )
 
 type generatedTarget struct {
