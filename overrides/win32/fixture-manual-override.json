@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "overrides": [
+    {
+      "overrideId": "fixture-correct-native-typedef-name-v1",
+      "sourceId": "fixture-e2e-v1",
+      "sdkVersionRange": {
+        "minInclusive": "1.0.0",
+        "maxInclusive": "1.0.0"
+      },
+      "symbolId": "sha256:717ca350486e67f7edae8b70055dd8adb0266f4be3c7df9c0a58aa1b3ea75fbb",
+      "before": {
+        "goName": "BROKEN_METADATA_TYPE"
+      },
+      "after": {
+        "goName": "CorrectedMetadataType"
+      },
+      "reason": "End-to-end fixture proving that a typed, evidence-bound override is applied without editing generated output.",
+      "evidence": [
+        {
+          "kind": "abi-probe",
+          "reference": "generator/testdata/headers/e2e.h:WINAPIGEN_HEADER_BITS"
+        }
+      ],
+      "test": "generator/internal/metadata.TestFixtureManualOverride",
+      "removalCondition": "Delete this fixture override when the end-to-end override stage is replaced by a versioned equivalent fixture."
+    }
+  ]
+}

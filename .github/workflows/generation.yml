@@ -1,0 +1,63 @@
+name: Deterministic generation
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: generation-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GOFLAGS: -mod=readonly
+
+jobs:
+  regenerate:
+    runs-on: windows-2025
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
+        with:
+          go-version-file: go.mod
+          cache: true
+          cache-dependency-path: go.sum
+      - name: Fetch pinned official inputs
+        run: go run ./cmd/winapisource fetch
+      - name: Verify pinned hashes
+        run: go run ./cmd/winapisource verify
+      - name: Decode representative official metadata rows and signatures
+        run: go test ./generator/internal/metadata -count=1
+      - name: First full generation
+        run: go run ./cmd/winapigen generate --all
+      - name: Verify checked-in ABI evidence
+        run: go run ./cmd/winapiverify abi --all
+      - name: Reject generation drift
+        shell: pwsh
+        run: |
+          git diff --exit-code
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $status = git status --porcelain --untracked-files=all
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if ($status) { $status; throw "generation produced untracked files" }
+      - name: Coverage gates
+        run: go run ./cmd/winapicoverage check --fail-unclassified --fail-regression
+      - name: Second full generation
+        run: go run ./cmd/winapigen generate --all
+      - name: Repeat ABI verification deterministically
+        run: go run ./cmd/winapiverify abi --all
+      - name: Reject nondeterminism on second generation
+        shell: pwsh
+        run: |
+          git diff --exit-code
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $status = git status --porcelain --untracked-files=all
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if ($status) { $status; throw "second generation changed the checkout" }

@@ -1,0 +1,15 @@
+# Keep generated source and reports byte-stable across Windows and Unix checkouts.
+* text=auto eol=lf
+*.go text eol=lf
+*.mod text eol=lf
+*.work text eol=lf
+*.sum text eol=lf
+*.json text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.md text eol=lf
+*.c text eol=lf
+*.h text eol=lf
+*.cpp text eol=lf
+*.tmpl text eol=lf
+*.gz -text

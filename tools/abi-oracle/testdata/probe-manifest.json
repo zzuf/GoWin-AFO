@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 1,
+  "sourceId": "vertical-slice-sdk-10.0.26100",
+  "sdkVersion": "10.0.26100.0",
+  "profile": "windows-desktop",
+  "architecture": "amd64",
+  "defines": {
+	"INITGUID": "1",
+    "NTDDI_VERSION": "0x0A00000C",
+    "WIN32_LEAN_AND_MEAN": "1",
+    "WINVER": "0x0A00",
+    "_WIN32_WINNT": "0x0A00"
+  },
+  "includes": [
+    "windows.h",
+    "unknwn.h",
+    "d3d9types.h"
+  ],
+  "records": [
+    {
+      "id": "record.GUID",
+      "nativeName": "GUID",
+      "kind": "struct",
+      "fields": [
+        { "id": "Data1", "nativeName": "Data1" },
+        { "id": "Data2", "nativeName": "Data2" },
+        { "id": "Data3", "nativeName": "Data3" },
+        { "id": "Data4", "nativeName": "Data4" }
+      ]
+    },
+    {
+      "id": "record.FILETIME",
+      "nativeName": "FILETIME",
+      "kind": "struct",
+      "fields": [
+        { "id": "dwHighDateTime", "nativeName": "dwHighDateTime" },
+        { "id": "dwLowDateTime", "nativeName": "dwLowDateTime" }
+      ]
+    },
+    {
+      "id": "record.LARGE_INTEGER",
+      "nativeName": "LARGE_INTEGER",
+      "kind": "union",
+      "fields": [
+        { "id": "HighPart", "nativeName": "HighPart" },
+        { "id": "LowPart", "nativeName": "LowPart" },
+        { "id": "QuadPart", "nativeName": "QuadPart" }
+      ]
+    },
+    {
+      "id": "record.OVERLAPPED",
+      "nativeName": "OVERLAPPED",
+      "kind": "struct",
+      "fields": [
+        { "id": "Internal", "nativeName": "Internal" },
+        { "id": "InternalHigh", "nativeName": "InternalHigh" },
+        { "id": "Offset", "nativeName": "Offset" },
+        { "id": "OffsetHigh", "nativeName": "OffsetHigh" },
+        { "id": "hEvent", "nativeName": "hEvent" }
+      ]
+    },
+    {
+      "id": "record.SYSTEMTIME",
+      "nativeName": "SYSTEMTIME",
+      "kind": "struct",
+      "fields": [
+        { "id": "wDay", "nativeName": "wDay" },
+        { "id": "wDayOfWeek", "nativeName": "wDayOfWeek" },
+        { "id": "wHour", "nativeName": "wHour" },
+        { "id": "wMilliseconds", "nativeName": "wMilliseconds" },
+        { "id": "wMinute", "nativeName": "wMinute" },
+        { "id": "wMonth", "nativeName": "wMonth" },
+        { "id": "wSecond", "nativeName": "wSecond" },
+        { "id": "wYear", "nativeName": "wYear" }
+      ]
+    }
+  ],
+  "values": [
+    {
+      "id": "constant.PAGE_READWRITE",
+      "nativeName": "PAGE_READWRITE",
+      "expression": "PAGE_READWRITE",
+      "unsigned": true
+    },
+    {
+      "id": "constant.WAIT_TIMEOUT",
+      "nativeName": "WAIT_TIMEOUT",
+      "expression": "WAIT_TIMEOUT",
+      "unsigned": true
+    }
+  ],
+  "guids": [
+    {
+      "id": "guid.IID_IUnknown",
+      "nativeName": "IID_IUnknown",
+	  "expression": "IID_IUnknown"
+    }
+  ],
+  "bitFields": [
+    {
+      "id": "bitfield.D3DAUTHENTICATEDCHANNEL_PROTECTION_FLAGS.ProtectionEnabled",
+      "nativeName": "ProtectionEnabled",
+      "record": "D3DAUTHENTICATEDCHANNEL_PROTECTION_FLAGS",
+      "field": "ProtectionEnabled"
+    }
+  ],
+  "functions": [
+    {
+      "id": "function.GetCurrentProcessId",
+      "nativeName": "GetCurrentProcessId",
+      "expression": "&::GetCurrentProcessId",
+      "expectedType": "DWORD (WINAPI *)(void)",
+      "callingConvention": "WINAPI"
+    },
+    {
+      "id": "function.QueryPerformanceCounter",
+      "nativeName": "QueryPerformanceCounter",
+      "expression": "&::QueryPerformanceCounter",
+      "expectedType": "BOOL (WINAPI *)(LARGE_INTEGER*)",
+      "callingConvention": "WINAPI"
+    }
+  ],
+  "vtables": [
+    {
+      "id": "vtable.IUnknown.AddRef",
+      "interface": "IUnknown",
+      "vtableType": "IUnknownVtbl",
+      "method": "AddRef"
+    },
+    {
+      "id": "vtable.IUnknown.QueryInterface",
+      "interface": "IUnknown",
+      "vtableType": "IUnknownVtbl",
+      "method": "QueryInterface"
+    },
+    {
+      "id": "vtable.IUnknown.Release",
+      "interface": "IUnknown",
+      "vtableType": "IUnknownVtbl",
+      "method": "Release"
+    }
+  ],
+  "conditions": [
+    {
+      "id": "condition.pointer64",
+      "nativeName": "sizeof(void*) == 8",
+      "expression": "sizeof(void*) == 8"
+    },
+    {
+      "id": "condition.win10",
+      "nativeName": "_WIN32_WINNT >= 0x0A00",
+      "expression": "_WIN32_WINNT >= 0x0A00"
+    }
+  ]
+}

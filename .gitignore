@@ -1,0 +1,15 @@
+# Pinned inputs are fetched and verified; licensed SDK artifacts are not vendored.
+/sources/cache/
+/sources/staging/
+/*.nupkg
+/*.registration.json
+/*.catalog.json
+
+# Generator staging and local verification outputs.
+/.winapigen-*/
+/coverage/local-*.json
+/tools/abi-oracle/out/
+*.exe
+*.obj
+*.pdb
+/.cache/

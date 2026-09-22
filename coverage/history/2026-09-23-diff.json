@@ -1,0 +1,62 @@
+{
+  "totalSymbols": 43,
+  "abiVerified": 0,
+  "abiUnverified": 43,
+  "abiMismatches": 0,
+  "runtimeSmokeTested": 0,
+  "manualOverrides": 0,
+  "bridgeCallable": 0,
+  "bySource": {
+    "microsoft-win32metadata": 43
+  },
+  "byNamespace": {
+    "Windows.Win32.Devices.FunctionDiscovery": 1,
+    "Windows.Win32.Devices.ImageAcquisition": 1,
+    "Windows.Win32.Media.DirectShow.Tv": 1,
+    "Windows.Win32.Media.MediaPlayer": 1,
+    "Windows.Win32.Networking.BackgroundIntelligentTransferService": 11,
+    "Windows.Win32.Networking.DeliveryOptimization": 1,
+    "Windows.Win32.Security.Authentication.WebAuthn": 24,
+    "Windows.Win32.Storage.DataDeduplication": 1,
+    "Windows.Win32.System.Search": 1,
+    "Windows.Win32.System.TaskScheduler": 1
+  },
+  "byKind": {
+    "function": 25,
+    "opaque": -1,
+    "typedef": 19
+  },
+  "byArchitecture": {
+    "neutral": 43
+  },
+  "byStatus": {
+    "source-parse-error": -11704,
+    "unsupported-go-abi": 58,
+    "unsupported-projection": 11689
+  },
+  "byBackend": {
+    "type-only": 19,
+    "unsupported": 24
+  },
+  "bySkipReason": {
+    "ecma335-table-row-read-error": -1,
+    "field-layout-projection-not-yet-emitted": 21,
+    "method-projection-not-yet-emitted": 11701,
+    "microsoft-go-winmd-field-signature:generic types are not yet supported": -2,
+    "microsoft-go-winmd-method-signature:generic types are not yet supported": -11002,
+    "microsoft-go-winmd-method-signature:unsupported element type: SZARRAY": -757,
+    "microsoft-go-winmd-method-signature:unsupported element type: VAR": -22,
+    "microsoft-go-winmd-method-signature:unsupported method signature calling convention: 0x3": 80,
+    "pinvoke-has-unresolved-or-unsafe-projected-type": -33,
+    "pinvoke-requires-unimplemented-special-abi-backend": 60,
+    "windows-386-wide-scalar-requires-multiword-abi": -2
+  },
+  "sourceIngestionPercent": 0,
+  "projectionAccountingPercent": 0,
+  "goSourceGenerationPercent": 0,
+  "pureGoCallablePercent": 0,
+  "assemblyCallablePercent": 0,
+  "bridgeCallablePercent": 0,
+  "abiVerifiedPercent": 0,
+  "runtimeSmokeTestedPercent": 0
+}

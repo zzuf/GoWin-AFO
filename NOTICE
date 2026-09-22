@@ -1,0 +1,65 @@
+go-windows-api
+Copyright 2026 The go-windows-api contributors
+
+This product is licensed under the Apache License, Version 2.0. See LICENSE.
+
+Third-party software incorporated into the generator
+=====================================================
+
+Microsoft go-winmd
+Copyright (c) Microsoft Corporation.
+Source: https://github.com/microsoft/go-winmd
+License: MIT
+
+MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE
+
+Official inputs used to generate bindings (not redistributed here)
+=================================================================
+
+The generated bindings are derived from versioned Microsoft Windows API
+metadata and SDK/WDK inputs, including as configured:
+
+- Microsoft.Windows.SDK.Win32Metadata / microsoft/win32metadata
+- Microsoft.Windows.WDK.Win32Metadata / microsoft/wdkmetadata
+- Windows SDK WinRT contract or UnionMetadata WinMD files
+- Microsoft.WindowsAppSDK component packages
+- Windows SDK and WDK headers when the header provider is enabled
+
+Copyright (c) Microsoft Corporation. All rights reserved.
+
+The GitHub metadata-production repositories may be MIT licensed, while the
+NuGet/SDK/WDK artifacts are accompanied by separate Microsoft software license
+terms. This distribution does not include the source packages, WinMD files,
+headers, libraries, type libraries, SDK/WDK files, or Windows App SDK runtime
+payloads. Exact source versions, hashes, and license identifiers are recorded
+in sources.lock.json. See docs/licensing.md for versioned license links and the
+redistribution policy.
+
+Reference implementations
+=========================
+
+microsoft/windows-rs, microsoft/CsWin32, Deployment Theory's Go bindings, and
+golang.org/x/sys/windows were studied and may be used as differential oracles.
+Their generated bindings are not inputs and their code is not incorporated by
+that act of comparison. See docs/existing-projects.md for roles and licenses.
+
+Microsoft and Windows are trademarks of the Microsoft group of companies.
+This project is not affiliated with, sponsored by, or endorsed by Microsoft.

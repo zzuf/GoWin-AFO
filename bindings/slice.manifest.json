@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "generator": "winapigen v0.1.0",
+  "inputs": [
+    {
+      "sourceId": "microsoft-win32metadata",
+      "version": "71.0.26-preview",
+      "sha256": "758efe32666596b8596c58a8c46631da23757a914713b4e88403bbfa5110cb38",
+      "sliceDescriptor": "e2e-slice-win32-foundation-v1",
+      "sliceDescriptorSha256": "8ad8a6155747f09499c3edd6850ccf30545f16ff5c36dee73c7620fb2ecb5534"
+    },
+    {
+      "sourceId": "microsoft-win32metadata",
+      "version": "71.0.26-preview",
+      "sha256": "758efe32666596b8596c58a8c46631da23757a914713b4e88403bbfa5110cb38",
+      "sliceDescriptor": "e2e-slice-win32-kernel32-v1",
+      "sliceDescriptorSha256": "725a59e35bf0b734c1f185987b378cef530f0875f5b703eaaf1b40e8c8279a8b"
+    },
+    {
+      "sourceId": "microsoft-wdkmetadata",
+      "version": "0.13.25-experimental",
+      "sha256": "79079a449d8f621052bcaf13039e411d1c1b77aec4a89cf04d96518d0a619617",
+      "sliceDescriptor": "e2e-slice-wdk-nt-v1",
+      "sliceDescriptorSha256": "36928b114b7ee2c1648d5565e0959fcdfc21150b2d9eba2b539f2fde3b3ea1d7"
+    },
+    {
+      "sourceId": "windows-sdk-winrt",
+      "version": "10.0.26100.0",
+      "sha256": "e2dee80d011cb9fc1276a0bd9f244f7a58d5ca72fe906a56e90d61c68cf8601a",
+      "sliceDescriptor": "e2e-slice-winrt-windows-foundation-v1",
+      "sliceDescriptorSha256": "24c85fd320cf36e0b22677ac3aa6b0bf907e184edcd551b9a232efe365bb168e"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "bindings/wdk/nt/zavailability_kernel.go",
+      "sha256": "c977046dd8ee5d6a4fc4bdbfa050e71c433e2b2819224225d507ba3357107514"
+    },
+    {
+      "path": "bindings/wdk/nt/ztypes_nt.go",
+      "sha256": "b01ad1fcae1d1d8cd5d22540f291ebb7a315b0c327c5e203d089d862649d9198"
+    },
+    {
+      "path": "bindings/win32/foundation/zavailability_types.go",
+      "sha256": "32a518db70f3172f42805be68c9aacfdfbc5fa82336691afc10da53887a3bfb8"
+    },
+    {
+      "path": "bindings/win32/foundation/ztypes_base.go",
+      "sha256": "d99110c96114beea2d3328b4d37e7dfbf7e8481a3dc443ab8980d827f333e2f1"
+    },
+    {
+      "path": "bindings/win32/foundation/ztypes_union_386.go",
+      "sha256": "6590a1808586cac7e27da09c6237c574fa361ffb0cc80cc5047e86331138cb64"
+    },
+    {
+      "path": "bindings/win32/foundation/ztypes_union_64.go",
+      "sha256": "aa4a32d7df14d051a36cef6bc6a5a5411bf66223e10fbff051548c3af869084c"
+    },
+    {
+      "path": "bindings/win32/kernel32/zavailability_kernel.go",
+      "sha256": "81abbeeaf39d3300d09927f56c58cbaeacbcc2e892c1122aaad6426c2c607a8f"
+    },
+    {
+      "path": "bindings/win32/kernel32/zcallbacks_locale.go",
+      "sha256": "f95714a273d6bd219f55f5980356965cf0207af026995b553b2b3e4b253df489"
+    },
+    {
+      "path": "bindings/win32/kernel32/zconstants_memory.go",
+      "sha256": "28afdcfe325d59fe2f8a9a7ca8f80a68871659b94708092b4a3181dc6ed89302"
+    },
+    {
+      "path": "bindings/win32/kernel32/zfunctions_kernel_windows.go",
+      "sha256": "2fa8750594ac90f98d80726548cbdafb75cdd89c71b30af0077ca5b0d1ac087f"
+    },
+    {
+      "path": "bindings/win32/kernel32/zfunctions_qpc_windows_386.go",
+      "sha256": "d06bebe2c3ea66c6a6ad0520d0d5fe55d816a356e21b9d696d1309852da3c6f2"
+    },
+    {
+      "path": "bindings/win32/kernel32/zfunctions_qpc_windows_64.go",
+      "sha256": "125c9fea168ebf65a67b818ea08cfc3358216e19077f20fc0e7422a6d8b72477"
+    },
+    {
+      "path": "bindings/winrt/windows/foundation/zclasses_uri.go",
+      "sha256": "5f8ed0d4602b5ab7892452349d0bed067f14c3a789c9e5102a55e3244df26959"
+    }
+  ]
+}

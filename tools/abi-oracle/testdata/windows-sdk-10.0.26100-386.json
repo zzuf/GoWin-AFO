@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "sourceId": "vertical-slice-sdk-10.0.26100",
+  "sdkVersion": "10.0.26100.0",
+  "profile": "windows-desktop",
+  "architecture": "386",
+  "manifestSha256": "3fc8157bcd9523c41b3c3b286ca61f8c9804456168e97754591dfe99b8ad198e",
+  "compiler": {
+    "family": "msvc",
+    "version": "194435228"
+  },
+  "records": [
+    {
+      "id": "record.FILETIME", "nativeName": "FILETIME", "kind": "struct", "size": 8, "alignment": 4,
+      "fields": [
+        { "id": "dwHighDateTime", "nativeName": "dwHighDateTime", "offset": 4 },
+        { "id": "dwLowDateTime", "nativeName": "dwLowDateTime", "offset": 0 }
+      ]
+    },
+    {
+      "id": "record.GUID", "nativeName": "GUID", "kind": "struct", "size": 16, "alignment": 4,
+      "fields": [
+        { "id": "Data1", "nativeName": "Data1", "offset": 0 },
+        { "id": "Data2", "nativeName": "Data2", "offset": 4 },
+        { "id": "Data3", "nativeName": "Data3", "offset": 6 },
+        { "id": "Data4", "nativeName": "Data4", "offset": 8 }
+      ]
+    },
+    {
+      "id": "record.LARGE_INTEGER", "nativeName": "LARGE_INTEGER", "kind": "union", "size": 8, "alignment": 8,
+      "fields": [
+        { "id": "HighPart", "nativeName": "HighPart", "offset": 4 },
+        { "id": "LowPart", "nativeName": "LowPart", "offset": 0 },
+        { "id": "QuadPart", "nativeName": "QuadPart", "offset": 0 }
+      ]
+    },
+    {
+      "id": "record.OVERLAPPED", "nativeName": "OVERLAPPED", "kind": "struct", "size": 20, "alignment": 4,
+      "fields": [
+        { "id": "Internal", "nativeName": "Internal", "offset": 0 },
+        { "id": "InternalHigh", "nativeName": "InternalHigh", "offset": 4 },
+        { "id": "Offset", "nativeName": "Offset", "offset": 8 },
+        { "id": "OffsetHigh", "nativeName": "OffsetHigh", "offset": 12 },
+        { "id": "hEvent", "nativeName": "hEvent", "offset": 16 }
+      ]
+    },
+    {
+      "id": "record.SYSTEMTIME", "nativeName": "SYSTEMTIME", "kind": "struct", "size": 16, "alignment": 2,
+      "fields": [
+        { "id": "wDay", "nativeName": "wDay", "offset": 6 },
+        { "id": "wDayOfWeek", "nativeName": "wDayOfWeek", "offset": 4 },
+        { "id": "wHour", "nativeName": "wHour", "offset": 8 },
+        { "id": "wMilliseconds", "nativeName": "wMilliseconds", "offset": 14 },
+        { "id": "wMinute", "nativeName": "wMinute", "offset": 10 },
+        { "id": "wMonth", "nativeName": "wMonth", "offset": 2 },
+        { "id": "wSecond", "nativeName": "wSecond", "offset": 12 },
+        { "id": "wYear", "nativeName": "wYear", "offset": 0 }
+      ]
+    }
+  ],
+  "values": [
+    { "id": "constant.PAGE_READWRITE", "nativeName": "PAGE_READWRITE", "value": "4" },
+    { "id": "constant.WAIT_TIMEOUT", "nativeName": "WAIT_TIMEOUT", "value": "258" }
+  ],
+  "guids": [
+    { "id": "guid.IID_IUnknown", "nativeName": "IID_IUnknown", "value": "00000000-0000-0000-c000-000000000046" }
+  ],
+  "bitFields": [
+    {
+      "id": "bitfield.D3DAUTHENTICATEDCHANNEL_PROTECTION_FLAGS.ProtectionEnabled",
+      "nativeName": "ProtectionEnabled", "maskHex": "01000000", "bitOffset": 0, "bitWidth": 1
+    }
+  ],
+  "functions": [
+    { "id": "function.GetCurrentProcessId", "nativeName": "GetCurrentProcessId", "typeCompatible": true, "callingConvention": "WINAPI" },
+    { "id": "function.QueryPerformanceCounter", "nativeName": "QueryPerformanceCounter", "typeCompatible": true, "callingConvention": "WINAPI" }
+  ],
+  "vtables": [
+    { "id": "vtable.IUnknown.AddRef", "interface": "IUnknown", "method": "AddRef", "index": 1 },
+    { "id": "vtable.IUnknown.QueryInterface", "interface": "IUnknown", "method": "QueryInterface", "index": 0 },
+    { "id": "vtable.IUnknown.Release", "interface": "IUnknown", "method": "Release", "index": 2 }
+  ],
+  "conditions": [
+    { "id": "condition.pointer64", "nativeName": "sizeof(void*) == 8", "value": false },
+    { "id": "condition.win10", "nativeName": "_WIN32_WINNT >= 0x0A00", "value": true }
+  ]
+}

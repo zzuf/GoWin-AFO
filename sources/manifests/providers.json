@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "providers": [
+    {"type": "win32-winmd", "implementation": "ecma335-winmd", "status": "inventory-and-safe-no-pointer-pinvoke-subset"},
+    {"type": "wdk-winmd", "implementation": "ecma335-winmd", "status": "inventory-with-duplicate-provenance-marking", "semanticDeduplication": false},
+    {"type": "winrt-winmd", "implementation": "ecma335-winmd", "status": "inventory; contract-attribute-projection-pending", "contractsProjected": false},
+    {"type": "windows-app-sdk", "implementation": "pinned-meta-package-sentinel", "status": "transitive-api-package-locks-pending"},
+    {"type": "clang-header", "implementation": "clang-ast-json-and-preprocessor-dM", "status": "provider-implemented-not-in-default-lock", "regexParser": false},
+    {"type": "typelib", "implementation": "provider-interface-and-json-fixture", "status": "native-TLB-reader-pending", "osCoverage": false},
+    {"type": "manual-override", "implementation": "version-ranged-whitelisted-json-fields", "status": "implemented"},
+    {"type": "external-sdk", "implementation": "provider-interface", "status": "interface-only", "osCoverage": false}
+  ]
+}

@@ -1,0 +1,18 @@
+schemaVersion: 1
+name: go-windows-api
+# With no pre-existing go.mod or Git remote, go.mod is the single authoritative
+# module-path setting. Replace go-windows-api.local before public release.
+modulePathSource: go.mod
+generatorVersion: 0.1.0
+defaultABIProfile: windows-desktop
+architectures:
+  - "386"
+  - amd64
+  - arm64
+profiles:
+  - windows-desktop
+  - windows-appcontainer
+  - windows-wdk
+sourceLock: sources.lock.json
+inventory: coverage/inventory.json.gz
+outputRoot: bindings/generated

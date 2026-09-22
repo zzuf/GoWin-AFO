@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://go-windows-api.local/schema/abi-oracle-result-v1.json",
+  "title": "Windows ABI oracle result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "sourceId", "sdkVersion", "profile", "architecture",
+    "manifestSha256", "compiler", "records", "values", "guids",
+    "bitFields", "functions", "vtables", "conditions"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "sourceId": { "$ref": "#/$defs/nonEmpty" },
+    "sdkVersion": { "$ref": "#/$defs/nonEmpty" },
+    "profile": { "$ref": "#/$defs/nonEmpty" },
+    "architecture": { "enum": ["386", "amd64", "arm64", "arm64ec"] },
+    "manifestSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "compiler": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["family", "version"],
+      "properties": {
+        "family": { "enum": ["msvc", "clang-cl"] },
+        "version": { "$ref": "#/$defs/nonEmpty" }
+      }
+    },
+    "records": { "type": "array", "items": { "$ref": "#/$defs/record" } },
+    "values": { "type": "array", "items": { "$ref": "#/$defs/value" } },
+    "guids": { "type": "array", "items": { "$ref": "#/$defs/guid" } },
+    "bitFields": { "type": "array", "items": { "$ref": "#/$defs/bitField" } },
+    "functions": { "type": "array", "items": { "$ref": "#/$defs/function" } },
+    "vtables": { "type": "array", "items": { "$ref": "#/$defs/vtable" } },
+    "conditions": { "type": "array", "items": { "$ref": "#/$defs/condition" } }
+  },
+  "$defs": {
+    "nonEmpty": { "type": "string", "minLength": 1 },
+    "id": { "type": "string", "minLength": 1 },
+    "uint": { "type": "integer", "minimum": 0 },
+    "field": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "nativeName", "offset"],
+      "properties": { "id": { "$ref": "#/$defs/id" }, "nativeName": { "$ref": "#/$defs/nonEmpty" }, "offset": { "$ref": "#/$defs/uint" } }
+    },
+    "record": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "nativeName", "kind", "size", "alignment", "fields"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" }, "nativeName": { "$ref": "#/$defs/nonEmpty" },
+        "kind": { "enum": ["struct", "union"] }, "size": { "$ref": "#/$defs/uint" },
+        "alignment": { "$ref": "#/$defs/uint" }, "fields": { "type": "array", "items": { "$ref": "#/$defs/field" } }
+      }
+    },
+    "value": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "nativeName", "value"],
+      "properties": { "id": { "$ref": "#/$defs/id" }, "nativeName": { "$ref": "#/$defs/nonEmpty" }, "value": { "type": "string", "pattern": "^-?[0-9]+$" } }
+    },
+    "guid": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "nativeName", "value"],
+      "properties": { "id": { "$ref": "#/$defs/id" }, "nativeName": { "$ref": "#/$defs/nonEmpty" }, "value": { "type": "string", "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$" } }
+    },
+    "bitField": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "nativeName", "maskHex", "bitOffset", "bitWidth"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" }, "nativeName": { "$ref": "#/$defs/nonEmpty" },
+        "maskHex": { "type": "string", "pattern": "^(?:[0-9a-f]{2})+$" },
+        "bitOffset": { "$ref": "#/$defs/uint" }, "bitWidth": { "$ref": "#/$defs/uint" }
+      }
+    },
+    "function": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "nativeName", "typeCompatible", "callingConvention"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" }, "nativeName": { "$ref": "#/$defs/nonEmpty" },
+        "typeCompatible": { "const": true }, "callingConvention": { "$ref": "#/$defs/nonEmpty" }
+      }
+    },
+    "vtable": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "interface", "method", "index"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" }, "interface": { "$ref": "#/$defs/nonEmpty" },
+        "method": { "$ref": "#/$defs/nonEmpty" }, "index": { "$ref": "#/$defs/uint" }
+      }
+    },
+    "condition": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "nativeName", "value"],
+      "properties": { "id": { "$ref": "#/$defs/id" }, "nativeName": { "$ref": "#/$defs/nonEmpty" }, "value": { "type": "boolean" } }
+    }
+  }
+}

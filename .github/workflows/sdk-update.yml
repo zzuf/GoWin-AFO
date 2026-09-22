@@ -1,0 +1,84 @@
+name: SDK update discovery and current-pin assessment
+
+on:
+  schedule:
+    - cron: "17 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sdk-update-assessment
+  cancel-in-progress: false
+
+env:
+  GOFLAGS: -mod=readonly
+
+jobs:
+  assess:
+    runs-on: windows-2025
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
+        with:
+          go-version-file: go.mod
+          cache: true
+          cache-dependency-path: go.sum
+      - name: Discover pinned-package update candidates without changing the lock
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force tools/abi-oracle/out | Out-Null
+          go run ./cmd/winapisource update --dry-run | Out-File -Encoding utf8 tools/abi-oracle/out/source-update-candidates.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Fetch and verify current pins
+        run: |
+          go run ./cmd/winapisource fetch
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          go run ./cmd/winapisource verify
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Regenerate current pinned tree
+        run: go run ./cmd/winapigen generate --all
+      - name: Coverage and projection gates
+        run: go run ./cmd/winapicoverage check --fail-unclassified --fail-regression
+      - name: Write coverage delta
+        shell: pwsh
+        run: |
+          go run ./cmd/winapicoverage diff coverage/baseline.json coverage/latest.json | Out-File -Encoding utf8 tools/abi-oracle/out/coverage-diff.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Capture generated and potential breaking API diffs
+        shell: pwsh
+        run: |
+          git diff --binary | Out-File -Encoding utf8 tools/abi-oracle/out/sdk-update.patch
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          git diff --name-status -- bindings runtime | Out-File -Encoding utf8 tools/abi-oracle/out/breaking-api-files.tsv
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          git status --porcelain --untracked-files=all | Out-File -Encoding utf8 tools/abi-oracle/out/checkout-status.txt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Draft release-note input
+        shell: pwsh
+        run: |
+          @"
+          # SDK update discovery and current-pin assessment
+
+          This is a review artifact, not an automatic release or merge.
+
+          - Review source-update-candidates.json and update sources.lock.json only in a pull request.
+          - This workflow does not apply a candidate lock; generation and coverage below prove only the current pins.
+          - Review coverage-diff.json for accounting and ABI-verification regressions.
+          - Review breaking-api-files.tsv and sdk-update.patch; the current report is file-level and requires API-level human review.
+          - Review checkout-status.txt for generated files absent from the checkout.
+          - Run the ABI workflow for x86/x64 execution and ARM64 compile verification after changing a pin.
+          "@ | Out-File -Encoding utf8 tools/abi-oracle/out/release-notes-draft.md
+      - name: Upload review artifacts
+        if: always()
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        with:
+          name: sdk-update-assessment
+          path: tools/abi-oracle/out/
+          if-no-files-found: warn
+          retention-days: 30

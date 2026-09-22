@@ -1,0 +1,555 @@
+{
+  "schemaVersion": 1,
+  "verifierVersion": "0.1.0",
+  "generatorVersion": "0.1.0",
+  "inventoryManifestHash": "05ae35fde5e7341dc2d55ae8148cbff5e83f11aacb41b13c644d1d08886e6341",
+  "scope": {
+    "name": "vertical-slice-fixture",
+    "allMeaning": "all checked-in ABI evidence for the vertical slice, not all Windows SDK namespaces",
+    "comparison": "normalized IR expectations versus independently compiled C/C++ oracle facts",
+    "generatedGoLayoutMeasured": false,
+    "generatedGoCallBoundaryTested": false
+  },
+  "passed": true,
+  "sliceManifest": {
+    "inputCount": 4,
+    "sourceLockMatchCount": 4,
+    "descriptorHashCount": 4,
+    "artifactCount": 13,
+    "verifiedArtifactHashCount": 13
+  },
+  "architectures": [
+    {
+      "architecture": "386",
+      "status": "executed",
+      "evidence": "validated-executed-oracle-result",
+      "abiFactCount": 47,
+      "matchedFacts": 17,
+      "unmatchedFacts": 30,
+      "mismatchedFacts": 0,
+      "mismatchCount": 0
+    },
+    {
+      "architecture": "amd64",
+      "status": "executed",
+      "evidence": "validated-executed-oracle-result",
+      "abiFactCount": 47,
+      "matchedFacts": 17,
+      "unmatchedFacts": 30,
+      "mismatchedFacts": 0,
+      "mismatchCount": 0
+    },
+    {
+      "architecture": "arm64",
+      "status": "configured-only",
+      "evidence": "configured-cross-compile-gate-no-validated-object",
+      "abiFactCount": 0,
+      "matchedFacts": 0,
+      "unmatchedFacts": 0,
+      "mismatchedFacts": 0,
+      "mismatchCount": 0
+    },
+    {
+      "architecture": "arm64ec",
+      "status": "unsupported",
+      "evidence": "distinct-target-not-supported-by-the-go-toolchain",
+      "abiFactCount": 0,
+      "matchedFacts": 0,
+      "unmatchedFacts": 0,
+      "mismatchedFacts": 0,
+      "mismatchCount": 0
+    }
+  ],
+  "oracles": [
+    {
+      "architecture": "386",
+      "sourceId": "vertical-slice-sdk-10.0.26100",
+      "sdkVersion": "10.0.26100.0",
+      "profile": "windows-desktop",
+      "manifestSha256": "3fc8157bcd9523c41b3c3b286ca61f8c9804456168e97754591dfe99b8ad198e",
+      "compilerFamily": "msvc",
+      "compilerVersion": "194435228",
+      "abiFactCount": 47,
+      "matchedFacts": 17,
+      "unmatchedFacts": 30,
+      "mismatchedFacts": 0
+    },
+    {
+      "architecture": "amd64",
+      "sourceId": "vertical-slice-sdk-10.0.26100",
+      "sdkVersion": "10.0.26100.0",
+      "profile": "windows-desktop",
+      "manifestSha256": "043c280224221fe8299d38dd2c2c3a23ae998e0d5e6779039c54d487980ce312",
+      "compilerFamily": "msvc",
+      "compilerVersion": "194435228",
+      "abiFactCount": 47,
+      "matchedFacts": 17,
+      "unmatchedFacts": 30,
+      "mismatchedFacts": 0
+    }
+  ],
+  "matchedSymbols": [
+    {
+      "architecture": "386",
+      "symbolId": "sha256:1cb4b58f3d5ca547ebd07df3c4b5bff37ed52e1ec80bc6ed30a45de1e4140669",
+      "nativeName": "GetCurrentProcessId",
+      "kind": "function",
+      "complete": true,
+      "matchedFactIds": [
+        "function.GetCurrentProcessId.callingConvention",
+        "function.GetCurrentProcessId.typeCompatible"
+      ],
+      "unmatchedFactIds": [],
+      "mismatchedFactIds": []
+    },
+    {
+      "architecture": "386",
+      "symbolId": "sha256:d3e6baf85eeebc287ed3806a254ca19a8f24ba37c6e02a7660b073363d2e9d22",
+      "nativeName": "GUID",
+      "kind": "guid",
+      "complete": true,
+      "matchedFactIds": [
+        "record.GUID.alignment",
+        "record.GUID.field.Data1.offset",
+        "record.GUID.field.Data2.offset",
+        "record.GUID.field.Data3.offset",
+        "record.GUID.field.Data4.offset",
+        "record.GUID.size"
+      ],
+      "unmatchedFactIds": [],
+      "mismatchedFactIds": []
+    },
+    {
+      "architecture": "386",
+      "symbolId": "sha256:e6b64ce9294dc2c614b572145d595aacc31ae7bb9894e7aa0359e7186ada97ca",
+      "nativeName": "LARGE_INTEGER",
+      "kind": "union",
+      "complete": true,
+      "matchedFactIds": [
+        "record.LARGE_INTEGER.alignment",
+        "record.LARGE_INTEGER.field.HighPart.offset",
+        "record.LARGE_INTEGER.field.LowPart.offset",
+        "record.LARGE_INTEGER.field.QuadPart.offset",
+        "record.LARGE_INTEGER.size"
+      ],
+      "unmatchedFactIds": [],
+      "mismatchedFactIds": []
+    },
+    {
+      "architecture": "386",
+      "symbolId": "sha256:fb401b920fdb077a3eafeca1332abf0b31fcc237c2df4f2c891f518acb874b48",
+      "nativeName": "FILETIME",
+      "kind": "struct",
+      "complete": true,
+      "matchedFactIds": [
+        "record.FILETIME.alignment",
+        "record.FILETIME.field.dwHighDateTime.offset",
+        "record.FILETIME.field.dwLowDateTime.offset",
+        "record.FILETIME.size"
+      ],
+      "unmatchedFactIds": [],
+      "mismatchedFactIds": []
+    },
+    {
+      "architecture": "amd64",
+      "symbolId": "sha256:1cb4b58f3d5ca547ebd07df3c4b5bff37ed52e1ec80bc6ed30a45de1e4140669",
+      "nativeName": "GetCurrentProcessId",
+      "kind": "function",
+      "complete": true,
+      "matchedFactIds": [
+        "function.GetCurrentProcessId.callingConvention",
+        "function.GetCurrentProcessId.typeCompatible"
+      ],
+      "unmatchedFactIds": [],
+      "mismatchedFactIds": []
+    },
+    {
+      "architecture": "amd64",
+      "symbolId": "sha256:d3e6baf85eeebc287ed3806a254ca19a8f24ba37c6e02a7660b073363d2e9d22",
+      "nativeName": "GUID",
+      "kind": "guid",
+      "complete": true,
+      "matchedFactIds": [
+        "record.GUID.alignment",
+        "record.GUID.field.Data1.offset",
+        "record.GUID.field.Data2.offset",
+        "record.GUID.field.Data3.offset",
+        "record.GUID.field.Data4.offset",
+        "record.GUID.size"
+      ],
+      "unmatchedFactIds": [],
+      "mismatchedFactIds": []
+    },
+    {
+      "architecture": "amd64",
+      "symbolId": "sha256:e6b64ce9294dc2c614b572145d595aacc31ae7bb9894e7aa0359e7186ada97ca",
+      "nativeName": "LARGE_INTEGER",
+      "kind": "union",
+      "complete": true,
+      "matchedFactIds": [
+        "record.LARGE_INTEGER.alignment",
+        "record.LARGE_INTEGER.field.HighPart.offset",
+        "record.LARGE_INTEGER.field.LowPart.offset",
+        "record.LARGE_INTEGER.field.QuadPart.offset",
+        "record.LARGE_INTEGER.size"
+      ],
+      "unmatchedFactIds": [],
+      "mismatchedFactIds": []
+    },
+    {
+      "architecture": "amd64",
+      "symbolId": "sha256:fb401b920fdb077a3eafeca1332abf0b31fcc237c2df4f2c891f518acb874b48",
+      "nativeName": "FILETIME",
+      "kind": "struct",
+      "complete": true,
+      "matchedFactIds": [
+        "record.FILETIME.alignment",
+        "record.FILETIME.field.dwHighDateTime.offset",
+        "record.FILETIME.field.dwLowDateTime.offset",
+        "record.FILETIME.size"
+      ],
+      "unmatchedFactIds": [],
+      "mismatchedFactIds": []
+    }
+  ],
+  "unmatchedFacts": [
+    {
+      "architecture": "386",
+      "factId": "bitfield.D3DAUTHENTICATEDCHANNEL_PROTECTION_FLAGS.ProtectionEnabled.bitOffset",
+      "reason": "no matching normalized IR bit-field record"
+    },
+    {
+      "architecture": "386",
+      "factId": "bitfield.D3DAUTHENTICATEDCHANNEL_PROTECTION_FLAGS.ProtectionEnabled.bitWidth",
+      "reason": "no matching normalized IR bit-field record"
+    },
+    {
+      "architecture": "386",
+      "factId": "bitfield.D3DAUTHENTICATEDCHANNEL_PROTECTION_FLAGS.ProtectionEnabled.maskHex",
+      "reason": "no matching normalized IR bit-field record"
+    },
+    {
+      "architecture": "386",
+      "factId": "condition.pointer64.value",
+      "reason": "target condition has no corresponding normalized IR symbol"
+    },
+    {
+      "architecture": "386",
+      "factId": "condition.win10.value",
+      "reason": "target condition has no corresponding normalized IR symbol"
+    },
+    {
+      "architecture": "386",
+      "factId": "constant.PAGE_READWRITE.value",
+      "reason": "no matching normalized IR constant"
+    },
+    {
+      "architecture": "386",
+      "factId": "constant.WAIT_TIMEOUT.value",
+      "reason": "no matching normalized IR constant"
+    },
+    {
+      "architecture": "386",
+      "factId": "function.QueryPerformanceCounter.callingConvention",
+      "reason": "no matching normalized IR function"
+    },
+    {
+      "architecture": "386",
+      "factId": "function.QueryPerformanceCounter.typeCompatible",
+      "reason": "no matching normalized IR function"
+    },
+    {
+      "architecture": "386",
+      "factId": "guid.IID_IUnknown.value",
+      "reason": "no matching normalized IR GUID value"
+    },
+    {
+      "architecture": "386",
+      "factId": "record.OVERLAPPED.alignment",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "386",
+      "factId": "record.OVERLAPPED.field.Internal.offset",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "386",
+      "factId": "record.OVERLAPPED.field.InternalHigh.offset",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "386",
+      "factId": "record.OVERLAPPED.field.Offset.offset",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "386",
+      "factId": "record.OVERLAPPED.field.OffsetHigh.offset",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "386",
+      "factId": "record.OVERLAPPED.field.hEvent.offset",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "386",
+      "factId": "record.OVERLAPPED.size",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "386",
+      "factId": "record.SYSTEMTIME.alignment",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "386",
+      "factId": "record.SYSTEMTIME.field.wDay.offset",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "386",
+      "factId": "record.SYSTEMTIME.field.wDayOfWeek.offset",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "386",
+      "factId": "record.SYSTEMTIME.field.wHour.offset",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "386",
+      "factId": "record.SYSTEMTIME.field.wMilliseconds.offset",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "386",
+      "factId": "record.SYSTEMTIME.field.wMinute.offset",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "386",
+      "factId": "record.SYSTEMTIME.field.wMonth.offset",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "386",
+      "factId": "record.SYSTEMTIME.field.wSecond.offset",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "386",
+      "factId": "record.SYSTEMTIME.field.wYear.offset",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "386",
+      "factId": "record.SYSTEMTIME.size",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "386",
+      "factId": "vtable.IUnknown.AddRef.index",
+      "reason": "no matching normalized IR interface"
+    },
+    {
+      "architecture": "386",
+      "factId": "vtable.IUnknown.QueryInterface.index",
+      "reason": "no matching normalized IR interface"
+    },
+    {
+      "architecture": "386",
+      "factId": "vtable.IUnknown.Release.index",
+      "reason": "no matching normalized IR interface"
+    },
+    {
+      "architecture": "amd64",
+      "factId": "bitfield.D3DAUTHENTICATEDCHANNEL_PROTECTION_FLAGS.ProtectionEnabled.bitOffset",
+      "reason": "no matching normalized IR bit-field record"
+    },
+    {
+      "architecture": "amd64",
+      "factId": "bitfield.D3DAUTHENTICATEDCHANNEL_PROTECTION_FLAGS.ProtectionEnabled.bitWidth",
+      "reason": "no matching normalized IR bit-field record"
+    },
+    {
+      "architecture": "amd64",
+      "factId": "bitfield.D3DAUTHENTICATEDCHANNEL_PROTECTION_FLAGS.ProtectionEnabled.maskHex",
+      "reason": "no matching normalized IR bit-field record"
+    },
+    {
+      "architecture": "amd64",
+      "factId": "condition.pointer64.value",
+      "reason": "target condition has no corresponding normalized IR symbol"
+    },
+    {
+      "architecture": "amd64",
+      "factId": "condition.win10.value",
+      "reason": "target condition has no corresponding normalized IR symbol"
+    },
+    {
+      "architecture": "amd64",
+      "factId": "constant.PAGE_READWRITE.value",
+      "reason": "no matching normalized IR constant"
+    },
+    {
+      "architecture": "amd64",
+      "factId": "constant.WAIT_TIMEOUT.value",
+      "reason": "no matching normalized IR constant"
+    },
+    {
+      "architecture": "amd64",
+      "factId": "function.QueryPerformanceCounter.callingConvention",
+      "reason": "no matching normalized IR function"
+    },
+    {
+      "architecture": "amd64",
+      "factId": "function.QueryPerformanceCounter.typeCompatible",
+      "reason": "no matching normalized IR function"
+    },
+    {
+      "architecture": "amd64",
+      "factId": "guid.IID_IUnknown.value",
+      "reason": "no matching normalized IR GUID value"
+    },
+    {
+      "architecture": "amd64",
+      "factId": "record.OVERLAPPED.alignment",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "amd64",
+      "factId": "record.OVERLAPPED.field.Internal.offset",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "amd64",
+      "factId": "record.OVERLAPPED.field.InternalHigh.offset",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "amd64",
+      "factId": "record.OVERLAPPED.field.Offset.offset",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "amd64",
+      "factId": "record.OVERLAPPED.field.OffsetHigh.offset",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "amd64",
+      "factId": "record.OVERLAPPED.field.hEvent.offset",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "amd64",
+      "factId": "record.OVERLAPPED.size",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "amd64",
+      "factId": "record.SYSTEMTIME.alignment",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "amd64",
+      "factId": "record.SYSTEMTIME.field.wDay.offset",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "amd64",
+      "factId": "record.SYSTEMTIME.field.wDayOfWeek.offset",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "amd64",
+      "factId": "record.SYSTEMTIME.field.wHour.offset",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "amd64",
+      "factId": "record.SYSTEMTIME.field.wMilliseconds.offset",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "amd64",
+      "factId": "record.SYSTEMTIME.field.wMinute.offset",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "amd64",
+      "factId": "record.SYSTEMTIME.field.wMonth.offset",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "amd64",
+      "factId": "record.SYSTEMTIME.field.wSecond.offset",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "amd64",
+      "factId": "record.SYSTEMTIME.field.wYear.offset",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "amd64",
+      "factId": "record.SYSTEMTIME.size",
+      "reason": "no matching normalized IR record"
+    },
+    {
+      "architecture": "amd64",
+      "factId": "vtable.IUnknown.AddRef.index",
+      "reason": "no matching normalized IR interface"
+    },
+    {
+      "architecture": "amd64",
+      "factId": "vtable.IUnknown.QueryInterface.index",
+      "reason": "no matching normalized IR interface"
+    },
+    {
+      "architecture": "amd64",
+      "factId": "vtable.IUnknown.Release.index",
+      "reason": "no matching normalized IR interface"
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "info",
+      "code": "oracle-facts-outside-fixture-ir",
+      "architecture": "386",
+      "message": "30 ABI facts have no comparable fixture IR fact and remain unverified"
+    },
+    {
+      "severity": "info",
+      "code": "oracle-facts-outside-fixture-ir",
+      "architecture": "amd64",
+      "message": "30 ABI facts have no comparable fixture IR fact and remain unverified"
+    },
+    {
+      "severity": "info",
+      "code": "arm64-compile-gate-configured",
+      "architecture": "arm64",
+      "message": "ARM64 cross-compilation is configured, but this run has no validated COFF object evidence"
+    }
+  ],
+  "mismatches": [],
+  "summary": {
+    "oracleCount": 2,
+    "abiFactCount": 94,
+    "matchedAbiFactCount": 34,
+    "unmatchedAbiFactCount": 60,
+    "mismatchedAbiFactCount": 0,
+    "matchedSymbolCount": 4,
+    "verifiedSymbolCount": 4,
+    "verifiedSymbolArchitectureCount": 8,
+    "matchedSymbolIds": [
+      "sha256:1cb4b58f3d5ca547ebd07df3c4b5bff37ed52e1ec80bc6ed30a45de1e4140669",
+      "sha256:d3e6baf85eeebc287ed3806a254ca19a8f24ba37c6e02a7660b073363d2e9d22",
+      "sha256:e6b64ce9294dc2c614b572145d595aacc31ae7bb9894e7aa0359e7186ada97ca",
+      "sha256:fb401b920fdb077a3eafeca1332abf0b31fcc237c2df4f2c891f518acb874b48"
+    ],
+    "mismatchCount": 0
+  }
+}

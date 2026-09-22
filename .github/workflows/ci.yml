@@ -1,0 +1,129 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GOFLAGS: -mod=readonly
+
+jobs:
+  quality:
+    name: Unit, fuzz smoke, vet, format
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
+        with:
+          go-version-file: go.mod
+          cache: true
+          cache-dependency-path: go.sum
+      - name: Unit tests
+        run: go test ./...
+      - name: ECMA-335 compressed integer fuzz smoke
+        run: go test ./generator/internal/ecma335 -run '^$' -fuzz '^FuzzCompressedUint$' -fuzztime 10s
+      - name: ECMA-335 signature fuzz smoke
+        run: go test ./generator/internal/ecma335 -run '^$' -fuzz '^FuzzSignatures$' -fuzztime 10s
+      - name: Vet handwritten generator and runtime
+        run: go vet ./cmd/... ./generator/... ./runtime/... ./tools/... ./bindings/win32/... ./bindings/wdk/... ./bindings/winrt/...
+      - name: Vet generated raw ABI and bridge
+        # uintptr-to-pointer returns are intrinsic to the raw syscall layer and
+        # are validated by ABI probes; all other standard vet analyzers remain on.
+        run: go vet -unsafeptr=false ./bindings/generated/... ./bridge/... ./examples/...
+      - name: Check gofmt
+        shell: bash
+        run: |
+          unformatted="$(git ls-files '*.go' | xargs gofmt -l)"
+          if [[ -n "$unformatted" ]]; then
+            echo "$unformatted"
+            exit 1
+          fi
+
+  host-build:
+    name: Generator build (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15, windows-2025]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
+        with:
+          go-version-file: go.mod
+          cache: true
+          cache-dependency-path: go.sum
+      - name: Build portable CLIs
+        run: go build ./cmd/... ./tools/abi-oracle
+      - name: Test generator and oracle
+        run: go test ./generator/... ./tools/abi-oracle/...
+
+  windows-cross-compile:
+    name: windows/${{ matrix.arch }}, CGO disabled
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: ["386", amd64, arm64]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
+        with:
+          go-version-file: go.mod
+          cache: true
+          cache-dependency-path: go.sum
+      - name: Compile all packages and tests
+        env:
+          GOOS: windows
+          GOARCH: ${{ matrix.arch }}
+          CGO_ENABLED: "0"
+        run: go test -exec=/bin/true ./...
+
+  windows-runtime-smoke:
+    name: Nondestructive Windows smoke (${{ matrix.arch }})
+    runs-on: windows-2025
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: ["386", amd64]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
+        with:
+          go-version-file: go.mod
+          cache: true
+          cache-dependency-path: go.sum
+      - name: Run raw, COM, and WinRT smoke tests
+        shell: pwsh
+        env:
+          GOARCH: ${{ matrix.arch }}
+          CGO_ENABLED: "0"
+        run: go test ./runtime/... ./bindings/win32/... ./bindings/winrt/...
+      - name: Compile bridge with cgo enabled
+        if: matrix.arch == 'amd64'
+        shell: pwsh
+        env:
+          CGO_ENABLED: "1"
+          CC: clang
+        run: go test ./bridge/...

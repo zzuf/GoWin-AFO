@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://go-windows-api.local/schemas/override-v1.json",
+  "title": "Windows API projection override",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "overrides"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "overrides": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["overrideId", "sourceId", "sdkVersionRange", "symbolId", "before", "after", "reason", "evidence", "test", "removalCondition"],
+        "properties": {
+          "overrideId": {"type": "string", "minLength": 1},
+          "sourceId": {"type": "string", "minLength": 1},
+          "sdkVersionRange": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["minInclusive", "maxInclusive"],
+            "properties": {"minInclusive": {"type": "string", "minLength": 1}, "maxInclusive": {"type": "string", "minLength": 1}}
+          },
+          "symbolId": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+          "before": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": false,
+            "properties": {
+              "nativeName": {"type": "string"},
+              "canonicalSignature": {"type": "string"},
+              "goName": {"type": "string"},
+              "type": {"type": ["object", "null"]},
+              "function": {"type": ["object", "null"]},
+              "constant": {"type": ["object", "null"]},
+              "guid": {"type": ["object", "null"]},
+              "availability": {"type": "object"},
+              "ownership": {"type": ["object", "null"]},
+              "attributes": {"type": ["object", "null"]}
+            }
+          },
+          "after": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": false,
+            "properties": {
+              "goName": {"type": "string"},
+              "type": {"type": ["object", "null"]},
+              "function": {"type": ["object", "null"]},
+              "constant": {"type": ["object", "null"]},
+              "guid": {"type": ["object", "null"]},
+              "availability": {"type": "object"},
+              "ownership": {"type": ["object", "null"]},
+              "attributes": {"type": ["object", "null"]}
+            }
+          },
+          "reason": {"type": "string", "minLength": 1},
+          "evidence": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["kind", "reference"], "properties": {"kind": {"enum": ["header", "abi-probe", "upstream-issue"]}, "reference": {"type": "string", "minLength": 1}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}, "additionalProperties": false}},
+          "test": {"type": "string", "minLength": 1},
+          "removalCondition": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}
