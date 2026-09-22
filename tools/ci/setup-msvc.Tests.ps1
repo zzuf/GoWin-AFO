@@ -34,3 +34,4 @@ try {
 }
 
 Write-Output 'setup-msvc tests passed'
+exit 0
