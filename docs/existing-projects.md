@@ -6,7 +6,7 @@
 
 - `microsoft/go-winmd` を [`16e7d31aeb8a`](https://github.com/microsoft/go-winmd/commit/16e7d31aeb8af4dd324c5c452e2263aa50b0f257) に固定。旧 `d6ac2179ffeb` 以降の generic/SZARRAY/signature 改善を利用し、API rename を adapter 側で吸収する。最低 Go 1.26 が必要。解析可能になったことと callable ABI が証明できたことは分離する。
 - Win32 metadata を [71.0.26-preview](https://www.nuget.org/packages/Microsoft.Windows.SDK.Win32Metadata/71.0.26-preview)、Windows App SDK meta package を [2.5.1](https://www.nuget.org/packages/Microsoft.WindowsAppSDK/2.5.1) に更新。package を取得して hash と依存を確認し、license/NOTICE は旧 pin と byte 同一だった。
-- WDK metadata は `0.13.25-experimental` を維持。installed SDK の WinRT/ABI oracle は引き続き `10.0.26100.0` を使用する。新しい SDK が存在しても、未検証の header/contract へ自動切替しない。
+- WDK metadata は `0.13.25-experimental` を維持。ABI oracle は引き続き installed SDK `10.0.26100.0` を使用する。WinRT 入力は同一 byte 列を含む公式 `Microsoft.Windows.SDK.CPP/10.0.26100.7705` に取得元を固定した（[CI 修正記録](updates/2026-09-23-ci.md)）。新しい SDK が存在しても、未検証の header/contract へ自動切替しない。
 
 ここでいう「再利用」は、コードまたはライブラリを依存関係として取り込むことを指す。「比較オラクル」は、同じ公式入力から得た名前、署名、レイアウト、診断、実行結果を差分比較する相手であり、相手の生成結果を一次ソースとしてコピーすることではない。Microsoft の WinMD、Windows SDK/WDK、Windows App SDK が一次入力であり、`windows-rs`、CsWin32 および Deployment Theory の生成済みバインディングは一次入力にしない。ライセンスと再配布方針は [licensing.md](licensing.md) を参照。
 

@@ -41,7 +41,9 @@ type descriptor struct {
 var pins = []sourcePin{
 	{"microsoft-win32metadata", "71.0.26-preview", "758efe32666596b8596c58a8c46631da23757a914713b4e88403bbfa5110cb38"},
 	{"microsoft-wdkmetadata", "0.13.25-experimental", "79079a449d8f621052bcaf13039e411d1c1b77aec4a89cf04d96518d0a619617"},
-	{"windows-sdk-winrt", "10.0.26100.0", "e2dee80d011cb9fc1276a0bd9f244f7a58d5ca72fe906a56e90d61c68cf8601a"},
+	// The CPP package carries the same reviewed WinMD (e2dee80d...) as the
+	// former installed-SDK pin; only the transport/provenance changed.
+	{"windows-sdk-winrt", "10.0.26100.7705", "ff455660bee071a744715a9665666fa29c07681579d3d815959a9eec5a556424"},
 }
 
 var descriptors = []descriptor{
@@ -110,6 +112,7 @@ func Render(root, modulePath, version string) (Tree, error) {
 		body = bytes.ReplaceAll(body, []byte("{{MODULE}}"), []byte(modulePath))
 		body = bytes.ReplaceAll(body, []byte("{{VERSION}}"), []byte(version))
 		body = bytes.ReplaceAll(body, []byte("{{WIN32_VERSION}}"), []byte(pinFor("microsoft-win32metadata").Version))
+		body = bytes.ReplaceAll(body, []byte("{{WINRT_VERSION}}"), []byte(pinFor("windows-sdk-winrt").Version))
 		if bytes.Contains(body, []byte("{{")) {
 			return Tree{}, fmt.Errorf("unresolved placeholder in %s", name)
 		}

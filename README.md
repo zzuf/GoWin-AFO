@@ -60,7 +60,8 @@ numbers and [docs/coverage.md](docs/coverage.md) for denominator definitions.
 
 - `Microsoft.Windows.SDK.Win32Metadata` `71.0.26-preview`
 - `Microsoft.Windows.WDK.Win32Metadata` `0.13.25-experimental`
-- Windows SDK UnionMetadata `10.0.26100.0`
+- Windows SDK UnionMetadata `10.0.26100.0`, fetched from the pinned
+  `Microsoft.Windows.SDK.CPP` NuGet `10.0.26100.7705` (not the runner's installed SDK)
 - Windows App SDK meta package `2.5.1` (the API-bearing transitive graph is
   classified `missing-upstream-metadata` until every package receives its own lock/hash)
 
@@ -128,7 +129,9 @@ wrappers, but it is intentionally outside the completeness denominator.
 ## Reproduce
 
 Use Go 1.26 or later; `go.mod` and `go.work` select the reproducible Go 1.26.8
-toolchain. From a clean checkout on Windows with the pinned SDK installed:
+toolchain. From a clean checkout on Windows (metadata fetch uses pinned NuGets;
+compiling fresh native ABI probes additionally needs MSVC/clang-cl and SDK
+`10.0.26100.0` headers):
 
 ```text
 go run ./cmd/winapisource fetch
