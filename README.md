@@ -1,6 +1,6 @@
-# go-windows-api
+# GoWin-AFO
 
-`go-windows-api` is a deterministic foundation for generating Go projections
+GoWin-AFO is a deterministic foundation for generating Go projections
 from Microsoft Windows metadata instead of maintaining a large hand-written API
 surface. It pins official inputs, inventories every discovered symbol with a
 stable ID, normalizes a language-neutral ABI IR, emits namespace-sized packages,
@@ -92,8 +92,12 @@ func main() {
 }
 ```
 
-The module path is `github.com/zzuf/GoWin-AFO`, matching the confirmed GitHub
-repository. `go.mod` remains the authoritative source for generated imports.
+The project name is **GoWin-AFO**, matching the
+[GitHub repository](https://github.com/zzuf/GoWin-AFO). `project.yaml` records
+the project name; `go.mod` is the authoritative source for the module path
+`github.com/zzuf/GoWin-AFO` and generated imports. The command names
+`winapigen`, `winapisource`, `winapicoverage`, `winapiverify`, and `abi-oracle`
+remain unchanged; they are tools within GoWin-AFO, not separate project names.
 Publishing this source repository does not imply a stable API or full Windows
 API coverage.
 

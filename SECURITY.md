@@ -1,4 +1,4 @@
-# Security policy
+# GoWin-AFO security policy
 
 ## 脆弱性の報告
 

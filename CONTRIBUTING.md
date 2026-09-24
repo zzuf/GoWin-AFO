@@ -1,4 +1,4 @@
-# Contributing
+# Contributing to GoWin-AFO
 
 このリポジトリへの変更は、生成物の量より ABI の正しさ、再現性、全 symbol の説明可能性を優先する。最初に `AGENTS.md`、`docs/architecture.md`、変更領域の文書を読むこと。
 

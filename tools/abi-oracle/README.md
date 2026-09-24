@@ -1,4 +1,4 @@
-# ABI oracle
+# GoWin-AFO ABI oracle
 
 `abi-oracle` turns a reviewed JSON manifest into deterministic C++ source. The
 source includes Microsoft SDK/WDK headers, proves function pointer types with

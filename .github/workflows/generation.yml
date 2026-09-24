@@ -1,4 +1,4 @@
-name: Deterministic generation
+name: GoWin-AFO deterministic generation
 
 on:
   pull_request:

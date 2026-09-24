@@ -62,13 +62,15 @@ func TestRenderReconstructsCheckedInSlice(t *testing.T) {
 }
 
 func TestRenderUsesModulePath(t *testing.T) {
-	tree, err := Render(projectRoot(t), "example.com/renamed", "0.1.0")
+	root := projectRoot(t)
+	module := projectModulePath(t, root)
+	tree, err := Render(root, "example.com/renamed", "0.1.0")
 	if err != nil {
 		t.Fatal(err)
 	}
 	for path, data := range tree.Files {
-		if strings.HasSuffix(path, ".go") && bytes.Contains(data, []byte("go-windows-api.local/")) {
-			t.Errorf("old module import in %s", path)
+		if strings.HasSuffix(path, ".go") && bytes.Contains(data, []byte(`"`+module+`/`)) {
+			t.Errorf("hardcoded project module import in %s", path)
 		}
 	}
 	got := tree.Files["bindings/win32/kernel32/zfunctions_kernel_windows.go"]
@@ -78,7 +80,7 @@ func TestRenderUsesModulePath(t *testing.T) {
 }
 
 func TestWriteRestoresDeletedArtifactAndPreservesHandwrittenFiles(t *testing.T) {
-	tree, err := Render(projectRoot(t), "go-windows-api.local", "0.1.0")
+	tree, err := Render(projectRoot(t), "example.com/fixture", "0.1.0")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -117,7 +119,7 @@ func TestRenderLockFailureLeavesSliceUntouched(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(root, "sources.lock.json"), []byte(`{"schemaVersion":1,"sources":[]}`), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	_, err := Render(root, "go-windows-api.local", "0.1.0")
+	_, err := Render(root, "example.com/fixture", "0.1.0")
 	if err == nil || !strings.Contains(err.Error(), "microsoft-win32metadata") {
 		t.Fatalf("expected pinned input failure, got %v", err)
 	}
@@ -127,7 +129,7 @@ func TestRenderLockFailureLeavesSliceUntouched(t *testing.T) {
 }
 
 func TestWritePreflightFailureKeepsExistingArtifact(t *testing.T) {
-	tree, err := Render(projectRoot(t), "go-windows-api.local", "0.1.0")
+	tree, err := Render(projectRoot(t), "example.com/fixture", "0.1.0")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -152,7 +154,7 @@ func TestWritePreflightFailureKeepsExistingArtifact(t *testing.T) {
 }
 
 func TestWriteRejectsHandwrittenFileAtOwnedPath(t *testing.T) {
-	tree, err := Render(projectRoot(t), "go-windows-api.local", "0.1.0")
+	tree, err := Render(projectRoot(t), "example.com/fixture", "0.1.0")
 	if err != nil {
 		t.Fatal(err)
 	}

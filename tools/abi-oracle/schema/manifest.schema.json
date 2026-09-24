@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://go-windows-api.local/schema/abi-oracle-manifest-v1.json",
-  "title": "Windows ABI oracle probe manifest",
+  "$id": "https://raw.githubusercontent.com/zzuf/GoWin-AFO/main/tools/abi-oracle/schema/manifest.schema.json",
+  "title": "GoWin-AFO Windows ABI oracle probe manifest",
   "type": "object",
   "additionalProperties": false,
   "required": ["schemaVersion", "sourceId", "sdkVersion", "profile", "architecture", "includes"],

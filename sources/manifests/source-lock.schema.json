@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://go-windows-api.local/schemas/source-lock-v1.json",
+  "$id": "https://raw.githubusercontent.com/zzuf/GoWin-AFO/main/sources/manifests/source-lock.schema.json",
+  "title": "GoWin-AFO source lock",
   "type": "object",
   "additionalProperties": false,
   "required": ["schemaVersion", "sources"],

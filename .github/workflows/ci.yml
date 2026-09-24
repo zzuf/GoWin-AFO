@@ -1,4 +1,4 @@
-name: CI
+name: GoWin-AFO CI
 
 on:
   push:

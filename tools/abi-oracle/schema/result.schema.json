@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://go-windows-api.local/schema/abi-oracle-result-v1.json",
-  "title": "Windows ABI oracle result",
+  "$id": "https://raw.githubusercontent.com/zzuf/GoWin-AFO/main/tools/abi-oracle/schema/result.schema.json",
+  "title": "GoWin-AFO Windows ABI oracle result",
   "type": "object",
   "additionalProperties": false,
   "required": [

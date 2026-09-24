@@ -1,6 +1,6 @@
-# Licensing and redistribution
+# GoWin-AFO licensing and redistribution
 
-This document records the repository's conservative licensing policy and the
+This document records GoWin-AFO's conservative licensing policy and the
 licenses observed for its inputs. It is an engineering compliance record, not
 legal advice. The exact license files shipped with the exact pinned artifact
 always control over this summary.

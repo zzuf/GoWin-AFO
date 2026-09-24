@@ -1,4 +1,4 @@
-name: SDK update discovery and current-pin assessment
+name: GoWin-AFO SDK update discovery and current-pin assessment
 
 on:
   schedule:
@@ -63,7 +63,7 @@ jobs:
         shell: pwsh
         run: |
           @"
-          # SDK update discovery and current-pin assessment
+          # GoWin-AFO SDK update discovery and current-pin assessment
 
           This is a review artifact, not an automatic release or merge.
 

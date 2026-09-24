@@ -40,11 +40,11 @@ func TestGoldenAndDeterministicRender(t *testing.T) {
 	if err = normalize.Inventory(&inv); err != nil {
 		t.Fatal(err)
 	}
-	a, err := Render(inv, "go-windows-api.local")
+	a, err := Render(inv, "example.com/fixture")
 	if err != nil {
 		t.Fatal(err)
 	}
-	b, err := Render(inv, "go-windows-api.local")
+	b, err := Render(inv, "example.com/fixture")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -1,4 +1,4 @@
-name: Windows ABI oracle
+name: GoWin-AFO Windows ABI oracle
 
 on:
   pull_request:

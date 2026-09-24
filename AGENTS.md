@@ -1,6 +1,6 @@
-# Repository instructions
+# GoWin-AFO repository instructions
 
-This repository generates Windows API bindings. Treat generated files as build
+GoWin-AFO generates Windows API bindings. Treat generated files as build
 artifacts whose source of truth is the pinned official input and the generator.
 
 - Do not edit generated code directly. Fix the generator, normalized IR,
