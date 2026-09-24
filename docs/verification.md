@@ -76,6 +76,8 @@ oracle comparator は実行した C++ result と checked-in baseline の機械�
 
 ## Failure の扱い
 
+CI は `tools/ci/setup-msvc.cmd` で Visual Studio Installer の `vswhere` を使い、C++ tools のある instance を検出する。Visual Studio の year/edition を固定パスに埋め込まない。`vcvarsall` の exit code だけでなく、選ばれた SDK version と header の存在も確認する。`tools/ci/setup-msvc.Tests.ps1` は x86/x64 と missing SDK/locator の失敗経路を検証する。
+
 ABI mismatch は expected/actual/path を持つ JSON diff と、生成 probe/compiler output を artifact として保存する。SDK 更新で layout、GUID、signature、DLL mapping が変わった場合、expected JSON を先に書き換えて gate を回避せず、公式 header/metadata の差分、影響する Go symbol、override の要否を確認する。
 
 cross-compile だけ成功、runtime runner 不在、optional SDK 不在は別々に記録する。検証できなかったものを成功扱いにせず、`ABIUnverified`、`external-sdk-not-installed`、または適切な非 callable status のまま残す。

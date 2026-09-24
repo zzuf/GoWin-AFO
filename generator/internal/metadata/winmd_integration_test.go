@@ -7,15 +7,33 @@ import (
 	"testing"
 
 	mswinmd "github.com/microsoft/go-winmd/winmd"
+	"github.com/zzuf/GoWin-AFO/generator/internal/source"
 )
 
-func cachedWinMD(t *testing.T, source, file string) string {
+func cachedWinMD(t *testing.T, sourceID string) string {
 	t.Helper()
 	root, err := filepath.Abs(filepath.Join("..", "..", ".."))
 	if err != nil {
 		t.Fatal(err)
 	}
-	path := filepath.Join(root, "sources", "cache", source, file)
+	m, err := source.Open(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var path string
+	for _, locked := range m.List() {
+		if locked.ID != sourceID {
+			continue
+		}
+		file, err := locked.MetadataFile()
+		if err != nil {
+			t.Fatal(err)
+		}
+		path = filepath.Join(m.CacheDir(locked), file)
+	}
+	if path == "" {
+		t.Fatalf("source %s missing from lock", sourceID)
+	}
 	if _, err := filepath.Glob(path); err != nil {
 		t.Fatal(err)
 	}
@@ -26,7 +44,7 @@ func cachedWinMD(t *testing.T, source, file string) string {
 }
 
 func TestOfficialWin32TablesAndSignatures(t *testing.T) {
-	path := cachedWinMD(t, "microsoft-win32metadata", "Windows.Win32.winmd")
+	path := cachedWinMD(t, "microsoft-win32metadata")
 	m, err := mswinmd.Open(path)
 	if err != nil {
 		t.Fatal(err)
@@ -205,7 +223,7 @@ func customAttributeTypeName(m *mswinmd.Metadata, attribute mswinmd.CustomAttrib
 // Generic signatures in the pinned SDK must be decoded by the upstream reader.
 // A regression here would silently turn valid methods into parse errors.
 func TestUpstreamGenericSignaturesDecode(t *testing.T) {
-	path := cachedWinMD(t, "windows-sdk-winrt", "Windows.winmd")
+	path := cachedWinMD(t, "windows-sdk-winrt")
 	m, err := mswinmd.Open(path)
 	if err != nil {
 		t.Fatal(err)

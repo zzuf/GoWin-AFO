@@ -126,20 +126,18 @@ func ingestLocked(ctx context.Context, root string, inv *model.Inventory, rawDum
 			inv.Symbols = append(inv.Symbols, sourceSentinel(locked.ID, locked.Type, locked.Package, "external-sdk-not-installed", state.Message))
 			continue
 		}
-		var file string
 		switch locked.Type {
-		case "win32-winmd":
-			file = "Windows.Win32.winmd"
-		case "wdk-winmd":
-			file = "Windows.Wdk.winmd"
-		case "winrt-winmd":
-			file = "Windows.winmd"
+		case "win32-winmd", "wdk-winmd", "winrt-winmd":
 		case "windows-app-sdk":
 			inv.Symbols = append(inv.Symbols, sourceSentinel(locked.ID, locked.Type, locked.Package, "missing-upstream-metadata", "meta package is verified, but transitive API packages do not yet have separately hashed provider locks"))
 			continue
 		default:
 			inv.Symbols = append(inv.Symbols, sourceSentinel(locked.ID, locked.Type, locked.Package, "unsupported-projection", "provider is registered but not selected in this run"))
 			continue
+		}
+		file, err := locked.MetadataFile()
+		if err != nil {
+			return err
 		}
 		provider := metadata.WinMDProvider{SourceType: locked.Type}
 		res, err := provider.Ingest(ctx, metadata.Request{Root: root, Locked: locked, Path: filepath.Join(m.CacheDir(locked), file), ABIProfile: profileFor(locked.Type)})
