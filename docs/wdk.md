@@ -1,82 +1,82 @@
 # WDK
 
-## 方針
+## Policy
 
-WDK metadata は Windows SDK metadata と別 source として扱う。現在固定している入力は `Microsoft.Windows.WDK.Win32Metadata` `0.13.25-experimental`、対象 Windows SDK は `10.0.26100.0` である。
+WDK metadata is treated as a separate source from Windows SDK metadata. The currently pinned input is `Microsoft.Windows.WDK.Win32Metadata` `0.13.25-experimental`, and the target Windows SDK is `10.0.26100.0`.
 
-標準 Go runtime で Windows kernel driver を構築・実行できるとは主張しない。カーネル用の型や定数が Go で表現できても、`ntoskrnl.exe`、`.sys`、HAL/NDIS 等の kernel export を通常 process から呼ぶ wrapper は生成しない。
+This project does not claim that the standard Go runtime can build or run Windows kernel drivers. Even when kernel types or constants can be represented in Go, it does not generate wrappers for calling kernel exports such as `ntoskrnl.exe`, `.sys`, HAL, or NDIS from an ordinary process.
 
-## 分類軸
+## Classification dimensions
 
-WDK symbol は最終的に次を区別する必要がある。
+WDK symbols ultimately need to distinguish:
 
-- 通常の user-mode process から呼出可能
-- UMDF runtime/context で利用可能
-- user-mode code にも有用な type/constant のみ
-- kernel-mode-only
-- 標準 Go runtime では実行不能
-- upstream metadata 不完全
-- header/ABI probe による補完が必要
+- Callable from an ordinary user-mode process
+- Available in a UMDF runtime/context
+- Type/constant only, but useful to user-mode code
+- Kernel-mode-only
+- Not executable with the standard Go runtime
+- Incomplete upstream metadata
+- Requires supplementation from a header/ABI probe
 
-現在の full-source provider が自動判定できるのは限定的である。P/Invoke target が `ntoskrnl`、HAL、NDIS、`.sys` と認識できる場合は `kernel-mode-only` にする。それ以外の WDK type/method は、callability と layout が証明されるまで原則 `unsupported-projection` または type-only inventory である。UMDF と user-mode の精密分類は未完成である。
+The current full-source provider can make only limited automatic decisions. When it recognizes a P/Invoke target as `ntoskrnl`, HAL, NDIS, or `.sys`, it classifies the symbol as `kernel-mode-only`. Other WDK types/methods generally remain `unsupported-projection` or type-only inventory until callability and layout are proven. Precise UMDF and user-mode classification is incomplete.
 
-## 現在の縦切り
+## Current vertical slice
 
-`bindings/wdk/nt` は次の代表例を持つ。
+`bindings/wdk/nt` contains these representative examples:
 
-| Symbol | 現在の扱い | 理由 |
+| Symbol | Current treatment | Reason |
 |---|---|---|
-| `UNICODE_STRING` | `generated-type-only` | counted UTF-16 layout。buffer ownership は外部 |
-| `OBJECT_ATTRIBUTES` | `generated-type-only` | user-mode NT consumer にも有用な layout。kernel callability は付与しない |
-| `DRIVER_OBJECT` / `PDRIVER_OBJECT` | opaque pointer / type-only | kernel object を user-mode allocatable struct にしない |
-| `IoCreateDevice` | `kernel-mode-only` | kernel driver execution environment が必要 |
-| `IoDeleteDevice` | `kernel-mode-only` | kernel driver execution environment が必要 |
+| `UNICODE_STRING` | `generated-type-only` | Counted UTF-16 layout; buffer ownership is external |
+| `OBJECT_ATTRIBUTES` | `generated-type-only` | Layout also useful to user-mode NT consumers; no kernel callability granted |
+| `DRIVER_OBJECT` / `PDRIVER_OBJECT` | Opaque pointer / type-only | Does not turn a kernel object into a user-mode-allocatable struct |
+| `IoCreateDevice` | `kernel-mode-only` | Requires a kernel driver execution environment |
+| `IoDeleteDevice` | `kernel-mode-only` | Requires a kernel driver execution environment |
 
-`kernel-mode-only` function に call wrapper はない。type-only symbol を import できることは、対応する kernel routine を呼べるという意味ではない。
+There are no call wrappers for `kernel-mode-only` functions. Being able to import a type-only symbol does not mean that its corresponding kernel routine can be called.
 
-## SDK/WDK 重複
+## SDK/WDK overlap
 
-source ID は stable ID の一部なので、SDK と WDK の provenance を失わない。現行 generator は namespace、kind、native name、canonical signature、architecture が一致する symbol を検出し、後続 origin に `duplicateProjectionOf` annotation を付ける。
+The source ID is part of a stable ID, so SDK and WDK provenance is preserved. The current generator detects symbols with matching namespace, kind, native name, canonical signature, and architecture, and adds a `duplicateProjectionOf` annotation to the later origin.
 
-これは単純な重複生成を避けるための基礎であって、完全な semantic merge ではない。typedef chain、custom attribute、layout、availability が異なる場合にどちらを canonical projection とするか、foundation package へどう共有するかはまだ全面実装されていない。source-specific coverage は両方を追跡する。
+This is a foundation for avoiding simple duplicate generation, not a complete semantic merge. Selection of a canonical projection when typedef chains, custom attributes, layouts, or availability differ, and sharing through a foundation package, are not yet fully implemented. Source-specific coverage tracks both origins.
 
-## Layout と architecture
+## Layout and architecture
 
-WDK type も Windows LLP64 と 386/amd64/arm64 の architecture 別 layout に従う。pointer-sized field、anonymous union、bit field、pack、flexible array は header/ABI oracle で証明してから direct Go struct にする。特に kernel object は OS version ごとの内部 layout を推測しない。公開されていない、または user-mode で意味のない body は opaque type に留める。
+WDK types also follow Windows LLP64 and architecture-specific layouts for 386/amd64/arm64. Pointer-sized fields, anonymous unions, bit fields, packing, and flexible arrays require proof from a header/ABI oracle before becoming direct Go structs. In particular, do not guess the internal layout of kernel objects across OS versions. Keep unpublished bodies, or bodies without meaning in user mode, opaque.
 
-WDK header 用 Clang profile は `_KERNEL_MODE=1` と Windows target triple を設定できるが、WDK include path、NTDDI/WINVER matrix、SAL、全 layout probe を full generation pipeline に統合する作業は未完である。
+The Clang profile for WDK headers can set `_KERNEL_MODE=1` and a Windows target triple, but integration of WDK include paths, an NTDDI/WINVER matrix, SAL, and all layout probes into the full generation pipeline is incomplete.
 
 ## Function callability
 
-WDK 由来というだけで kernel-only とは限らず、逆に DLL 名だけで user-mode safety が確定するわけでもない。callable へ昇格するには少なくとも次を確認する。
+Originating in the WDK does not by itself make a symbol kernel-only, nor does a DLL name alone establish user-mode safety. Promotion to callable requires checking at least:
 
-- export が user-mode DLL に存在する
-- 対象 profile と minimum OS version
-- calling convention と architecture ABI
-- parameter が user-mode address space で有効
-- handle/object ownership と IRQL/context 制約
-- administrator、driver install、service、system configuration 変更を必要としないか
-- metadata と WDK header の signature が一致するか
+- The export exists in a user-mode DLL.
+- The target profile and minimum OS version.
+- The calling convention and architecture ABI.
+- Parameters are valid in user-mode address space.
+- Handle/object ownership and IRQL/context constraints.
+- Whether administrator access, driver installation, a service, or a system configuration change is required.
+- The metadata signature matches the WDK header.
 
-kernel export は `purego-syscall` 候補にしない。UMDF API も framework initialization と lifetime が必要なため、単純な DLL call wrapper だけで対応済みとしない。
+Kernel exports are not candidates for `purego-syscall`. UMDF APIs also require framework initialization and lifetime management, so a simple DLL call wrapper does not constitute support.
 
-## NTSTATUS と error
+## NTSTATUS and errors
 
-WDK/NT API の raw result は `NTSTATUS int32` として保持する。`NT_SUCCESS(status)` と同じ signed comparison を使い、severity/facility/code を参照できる。Win32 error へ変換する便利 helper を将来追加する場合も、元の NTSTATUS を失わない。
+Raw results of WDK/NT APIs are preserved as `NTSTATUS int32`. They use the same signed comparison as `NT_SUCCESS(status)` and expose severity/facility/code. Even if a convenience helper to convert to a Win32 error is added later, it must preserve the original NTSTATUS.
 
-## テストと安全性
+## Testing and safety
 
-通常 CI では driver install、service 作成、registry 変更、kernel call を行わない。type layout の Go cross-compile と C/C++ cross-compile、user-mode で非破壊な API だけを検証対象とする。kernel-only symbol は inventory/status/reason の存在をテストし、実行しないこと自体を安全要件とする。
+Ordinary CI does not install drivers, create services, change the registry, or make kernel calls. Verification covers Go and C/C++ cross-compilation of type layouts and only non-destructive user-mode APIs. Tests check the presence of inventory/status/reason for kernel-only symbols; avoiding execution is itself a safety requirement.
 
-pointer が kernel address を指すと仮定した dereference helper、未文書 struct layout、推測した NT signature は生成しない。metadata 不完全なら `missing-upstream-metadata`、header parse failure なら `source-parse-error`、Go ABI が証明不能なら `unsupported-go-abi` として残す。
+Do not generate dereference helpers that assume a pointer refers to a kernel address, undocumented struct layouts, or guessed NT signatures. Leave incomplete metadata as `missing-upstream-metadata`, header parse failures as `source-parse-error`, and unprovable Go ABIs as `unsupported-go-abi`.
 
-## 未達事項
+## Outstanding work
 
-- WDK 全 TypeDef/Field/MethodDef 以外を含む完全 inventory
-- custom attribute と header 条件を使った user-mode/UMDF/kernel-mode 分類
-- SDK/WDK 型の semantic deduplication
-- WDK 全公開型の ABI oracle 検証
-- user-mode WDK API の汎用 emitter
-- WDK header の 386/amd64/arm64、WINVER/NTDDI profile matrix
+- Complete WDK inventory beyond all TypeDef/Field/MethodDef entries
+- User-mode/UMDF/kernel-mode classification using custom attributes and header conditions
+- Semantic deduplication of SDK/WDK types
+- ABI oracle verification of all public WDK types
+- A general-purpose emitter for user-mode WDK APIs
+- A 386/amd64/arm64 and WINVER/NTDDI profile matrix for WDK headers
 
-これらが完了するまでは、WDK 全体をサポート済み、または WDK 網羅率 100% と表示しない。
+Until these are complete, do not present the entire WDK as supported or claim 100% WDK coverage.

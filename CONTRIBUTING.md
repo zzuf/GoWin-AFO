@@ -1,10 +1,10 @@
 # Contributing to GoWin-AFO
 
-このリポジトリへの変更は、生成物の量より ABI の正しさ、再現性、全 symbol の説明可能性を優先する。最初に `AGENTS.md`、`docs/architecture.md`、変更領域の文書を読むこと。
+Changes to this repository must prioritize ABI correctness, reproducibility, and accounting for every symbol over the volume of generated output. Start by reading `AGENTS.md`, `docs/architecture.md`, and the documentation for the area you are changing.
 
-## 開発環境
+## Development environment
 
-基本の generator/test は Go 1.26 以降で Linux、macOS、Windows 上から実行できる。再現用 toolchain は `go.mod` / `go.work` の Go 1.26.8 に固定する。公式 source の取得には HTTPS access が必要である。WinRT source と ABI probe には対象 Windows SDK、WDK header probe には対象 WDK、native probe には MSVC または clang-cl が必要である。
+The basic generator and tests run on Linux, macOS, and Windows with Go 1.26 or later. `go.mod` / `go.work` pin Go 1.26.8 for reproducibility. Fetching official sources requires HTTPS access. WinRT sources and ABI probes require the target Windows SDK; WDK header probes require the target WDK; native probes require MSVC or clang-cl.
 
 ```text
 go run ./cmd/winapisource fetch
@@ -12,45 +12,45 @@ go run ./cmd/winapisource verify
 go test ./...
 ```
 
-SDK/NuGet/header を repository へ無断で vendor しない。license と再配布可否は `docs/licensing.md` を確認する。
+Do not vendor SDKs, NuGet packages, or headers into the repository without permission. See `docs/licensing.md` for licensing and redistribution requirements.
 
-## 変更する場所
+## Where to make changes
 
-generated header に `Code generated ... DO NOT EDIT.` とある file を直接編集しない。修正先は次のいずれかである。
+Do not edit files whose generated header says `Code generated ... DO NOT EDIT.` directly. Make corrections in one of the following areas:
 
-- parser/provider: 公式入力の読み取り不足
-- normalized IR/projection: 型、ABI、ownership、availability、status 判定
-- emitter: Go/C/assembly source の構成
-- typed override: 証拠がある upstream metadata defect
-- runtime: 共通 ABI、COM、WinRT、ergonomic helper
-- oracle/test: header による ABI 証明
+- Parser/provider: incomplete reading of official inputs.
+- Normalized IR/projection: types, ABI, ownership, availability, and status classification.
+- Emitter: the structure of Go, C, or assembly source.
+- Typed override: an upstream metadata defect supported by evidence.
+- Runtime: shared ABI, COM, WinRT, and ergonomic helpers.
+- Oracle/test: ABI evidence derived from headers.
 
-namespace package を細かく保ち、foundation 型をコピーしない。raw ABI layer と ergonomic layer を混ぜない。通常 application package に `unsafe` を広げない。
+Keep namespace packages small and do not duplicate foundation types. Keep the raw ABI and ergonomic layers separate. Do not spread `unsafe` into ordinary application packages.
 
-## ABI 変更
+## ABI changes
 
-Windows は LLP64 である。C `int`/`LONG`/`DWORD` を Go `int` に置き換えず、pointer-sized type だけを architecture 別にする。calling convention、float/vector、aggregate-by-value、varargs、callback を推測しない。利用可能 backend で証明できない function は callable wrapper を作らず reason 付き status にする。
+Windows uses LLP64. Do not replace C `int`/`LONG`/`DWORD` with Go `int`; only pointer-sized types should vary by architecture. Do not guess calling conventions, float/vector handling, aggregates passed by value, varargs, or callbacks. If a function cannot be proven correct with an available backend, assign a status with a reason instead of generating a callable wrapper.
 
-type layout または function signature を変更するときは `tools/abi-oracle` manifest と regression test を追加する。manifest の native expression は実行される C++ source なので review 済み固定 text だけを使い、外部入力を挿入しない。
+When changing a type layout or function signature, add a `tools/abi-oracle` manifest and a regression test. Native expressions in the manifest become executable C++ source: use only reviewed, fixed text, and never insert external input.
 
 ## Override checklist
 
-新しい override は schema を満たすだけでは不十分で、次をすべて含める。
+Meeting the schema is not sufficient for a new override. Every override must include:
 
-- 一意な override ID、source ID、symbol ID
-- 対象 SDK version range
-- 現在値と一致しなければ失敗する `before`
-- 最小限の `after`
-- なぜ metadata が誤り、Go ABI にどう影響するか
-- 公式 header、ABI probe、または upstream issue の evidence
-- 自動 regression test
-- 上流修正後の具体的 removal condition
+- A unique override ID, source ID, and symbol ID.
+- The affected SDK version range.
+- A `before` value that causes failure if it does not match the current value.
+- A minimal `after` value.
+- An explanation of why the metadata is incorrect and how it affects the Go ABI.
+- Evidence from an official header, ABI probe, or upstream issue.
+- An automated regression test.
+- A specific removal condition once the upstream issue is fixed.
 
-期限・根拠不明の override、symbol ID の wildcard、大量 symbol の一括上書きは受理しない。
+Overrides with no clear lifetime or evidence, wildcard symbol IDs, and bulk overwrites of many symbols are not accepted.
 
-## Test と generation
+## Tests and generation
 
-変更範囲に応じて最低限次を実行する。
+Run at least the following checks, as appropriate for the scope of the change:
 
 ```text
 gofmt -w <changed-go-files>
@@ -61,12 +61,12 @@ go run ./cmd/winapicoverage check --fail-unclassified --fail-regression
 go run ./cmd/winapigen generate --all
 ```
 
-二回目の生成後に diff があってはならない。generated tree は temporary sibling で完成・検証後に置換されるべきで、失敗時に正常な既存 tree を壊さない。
+The second generation must introduce no diff. Complete and validate the generated tree in a temporary sibling directory before replacing the destination. A failure must not damage the existing valid tree.
 
-Windows target は `386`、`amd64`、`arm64` を cross-compile する。bridge change は `CGO_ENABLED=0` で Pure Go packages が build できることと、`CGO_ENABLED=1` で該当 bridge が build できることを別々に確認する。Windows runtime test は非破壊 API だけを使う。
+Cross-compile the Windows targets `386`, `amd64`, and `arm64`. For bridge changes, separately verify that Pure Go packages build with `CGO_ENABLED=0` and the relevant bridge builds with `CGO_ENABLED=1`. Windows runtime tests must use only nondestructive APIs.
 
 ## Pull request
 
-説明には source/version/hash、影響する symbol/status/backend、生成 package、coverage before/after、ABI evidence、実行した target/test、known limitation を記載する。生成された大量差分を parser/IR/emitter change と分離せず提出しない。
+Describe the source/version/hash, affected symbols/statuses/backends, generated packages, coverage before and after the change, ABI evidence, targets/tests executed, and known limitations. Keep large generated diffs distinct from parser/IR/emitter changes in the submission.
 
-SDK update は `docs/sdk-updates.md` に従う。lock、generated diff、coverage diff、ABI diff、breaking API review、license/NOTICE をまとめ、workflow から main へ自動 merge しない。
+Follow `docs/sdk-updates.md` for SDK updates. Include the lock, generated diff, coverage diff, ABI diff, breaking API review, and license/NOTICE changes together. Workflows must not automatically merge into main.

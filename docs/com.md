@@ -1,28 +1,28 @@
 # COM
 
-## 対応範囲
+## Scope
 
-現在の COM 実装は consumer 側の最小 ABI runtime であり、COM 全体の投影ではない。
+The current COM implementation is a minimal consumer-side ABI runtime, not a projection of all COM.
 
-| 機能 | 現在の状態 |
+| Feature | Current state |
 |---|---|
-| GUID / IID | `winabi.GUID` と canonical parser を実装 |
-| IUnknown | vtable slot 0–2、`QueryInterface`、`AddRef`、`Release` を実装 |
-| Interface inheritance | vtable prefix を埋め込む基本形を実装 |
-| Apartment | `CoInitializeEx` / `CoUninitialize` と OS-thread pin owner を実装 |
-| BSTR | `SysAllocStringLen` / `SysStringLen` / `SysFreeString` の owned wrapper を実装 |
-| COM task memory | `CoTaskMemAlloc` / `CoTaskMemFree` の owned wrapper を実装 |
-| Generated interface | fixture の `IExample` vtable layout 例のみ |
-| SAFEARRAY / VARIANT / PROPVARIANT | 未実装 |
-| coclass activation helper | 一般化未実装 |
-| Automation / IDispatch | 未実装 |
-| Go object を COM server/callback として公開 | 未実装 |
+| GUID / IID | `winabi.GUID` and a canonical parser implemented |
+| IUnknown | Vtable slots 0–2, `QueryInterface`, `AddRef`, and `Release` implemented |
+| Interface inheritance | Basic form with an embedded vtable prefix implemented |
+| Apartment | `CoInitializeEx` / `CoUninitialize` and an OS-thread-pinned owner implemented |
+| BSTR | Owned wrapper for `SysAllocStringLen` / `SysStringLen` / `SysFreeString` implemented |
+| COM task memory | Owned wrapper for `CoTaskMemAlloc` / `CoTaskMemFree` implemented |
+| Generated interface | Only the fixture's `IExample` vtable layout example |
+| SAFEARRAY / VARIANT / PROPVARIANT | Not implemented |
+| Coclass activation helper | General-purpose helper not implemented |
+| Automation / IDispatch | Not implemented |
+| Exposing a Go object as a COM server/callback | Not implemented |
 
-Windows SDK metadata 内の全 COM interface、継承、method parameter、IID を生成済みとは主張しない。full-source provider は interface を inventory 化できるが、custom attribute と layout の完全復元、C/C++ oracle による全 vtable 検証、汎用 method emitter は未完成である。
+This does not claim that every COM interface, inheritance relationship, method parameter, or IID in Windows SDK metadata has been generated. The full-source provider can inventory interfaces, but complete reconstruction of custom attributes and layouts, verification of every vtable against a C/C++ oracle, and a general-purpose method emitter are incomplete.
 
-## Object と vtable
+## Objects and vtables
 
-COM interface pointer は先頭に vtable pointer を持つ native object として扱う。`IUnknownVTable` は次の順序を固定する。
+A COM interface pointer is treated as a native object with a vtable pointer at its start. `IUnknownVTable` fixes this order:
 
 | Slot | Method |
 |---:|---|
@@ -30,28 +30,28 @@ COM interface pointer は先頭に vtable pointer を持つ native object とし
 | 1 | `AddRef` |
 | 2 | `Release` |
 
-派生 interface は base vtable を prefix とし、その後へ metadata order の method slot を追加する。生成器は slot index を IR に保持するが、正式に generated-callable とする前に header の interface declaration または C++ oracle と照合する必要がある。
+A derived interface uses the base vtable as a prefix and appends method slots in metadata order. The generator records slot indexes in the IR, but they must be checked against a header interface declaration or C++ oracle before the interface is officially classified as generated-callable.
 
-method 呼出は `winabi.CallAddress` の integer/pointer ABI を使う。aggregate-by-value、float/vector、特殊 return など、この境界で表現できない method は C bridge/assembly または unsupported に分類する。
+Method calls use the integer/pointer ABI of `winabi.CallAddress`. Methods that this boundary cannot represent, including aggregate-by-value, float/vector, or special returns, are classified as requiring a C bridge/assembly or as unsupported.
 
 ## Reference ownership
 
-owned COM reference は必ず明示的に `Release` する。finalizer は唯一の解放手段ではない。次を呼出側が区別する。
+An owned COM reference must be explicitly `Release`d. A finalizer is not the sole means of release. Callers must distinguish:
 
-- `QueryInterface` などが返す新しい owned reference
-- `AddRef` で明示的に追加した reference
-- parameter として一時的に借用した reference
-- API が retained する callback/interface pointer
+- A new owned reference returned by `QueryInterface` or a similar method
+- A reference explicitly added with `AddRef`
+- A reference temporarily borrowed as a parameter
+- A callback/interface pointer retained by an API
 
-`Release` 後、特に返り値が zero の object pointer を再利用しない。wrapper をコピーして複数 owner に見せない。現在の低レベル `IUnknown` は smart pointer ではないため、reference の一意 ownership を自動保証しない。
+Do not reuse an object pointer after `Release`, especially if its return value is zero. Do not copy a wrapper so that multiple parties appear to own it. The current low-level `IUnknown` is not a smart pointer and does not automatically guarantee unique ownership of a reference.
 
-## Apartment と thread affinity
+## Apartments and thread affinity
 
-COM initialization は OS thread 単位である。`EnterApartment` は現在の goroutine を `runtime.LockOSThread` で固定し、`CoInitializeEx` が成功した場合だけ owner を返す。`Apartment.Close` は同じ goroutine 上で `CoUninitialize` を呼び、thread lock を解除する。
+COM initialization is per OS thread. `EnterApartment` pins the current goroutine with `runtime.LockOSThread` and returns an owner only if `CoInitializeEx` succeeds. `Apartment.Close` calls `CoUninitialize` on the same goroutine and releases the thread lock.
 
-`S_OK` と `S_FALSE` はどちらも成功として保持する。異なる apartment model がすでに設定されて失敗した場合、owner は返さず thread lock を解除する。`Apartment` を copy したり別 goroutine へ移動したりしてはならない。
+Both `S_OK` and `S_FALSE` are preserved as success. If initialization fails because a different apartment model is already set, it returns no owner and releases the thread lock. Do not copy an `Apartment` or move it to another goroutine.
 
-基本形は次のとおりである。
+The basic pattern is:
 
 ```go
 apartment, status := com.EnterApartment(com.COINIT_MULTITHREADED)
@@ -61,33 +61,33 @@ if status.Failed() {
 defer apartment.Close()
 ```
 
-## BSTR と task allocator
+## BSTR and task allocation
 
-`BSTR` は明示長を持つため embedded NUL を保持する。`NewBSTR` は UTF-16 code unit 数が `UINT32` に収まることを確認し、source slice を native call 終了まで `runtime.KeepAlive` する。`String` は `SysStringLen` の length を address space と Go `int` に対して検査してから copy する。`Close` は pointer を clear し、二度目を no-op にする。
+A `BSTR` has an explicit length and therefore preserves embedded NULs. `NewBSTR` checks that the number of UTF-16 code units fits in `UINT32` and keeps the source slice alive with `runtime.KeepAlive` until the native call finishes. `String` checks the length from `SysStringLen` against the address space and Go `int` before copying. `Close` clears the pointer and makes a second call a no-op.
 
-`TaskMemory` は size と native pointer を保持し、`Close` で一度だけ `CoTaskMemFree` する。COM out parameter が返した pointer は `FreeTaskMemory` で解放できる。どちらにも finalizer はない。
+`TaskMemory` holds a size and native pointer and calls `CoTaskMemFree` only once in `Close`. Pointers returned through COM out parameters can be released with `FreeTaskMemory`. Neither has a finalizer.
 
-SAFEARRAY、VARIANT、PROPVARIANT の ownership と clear routine は未実装なので、それらを含む API を ergonomic に扱えるとは分類しない。
+Ownership and clear routines for SAFEARRAY, VARIANT, and PROPVARIANT are not implemented, so APIs involving them are not classified as ergonomically usable.
 
 ## HRESULT
 
-raw COM method は `HRESULT` を signed 32-bit のまま返す。severity bit が failure の場合だけ `Failed()` / `Err()` が error と見なす。facility/code と成功時の `S_FALSE` を失わない。out parameter は HRESULT 成功を確認するまで使用しない。
+Raw COM methods return `HRESULT` as a signed 32-bit value. `Failed()` / `Err()` treat it as an error only when the severity bit indicates failure. They preserve the facility/code and `S_FALSE` on success. Do not use out parameters until HRESULT success has been checked.
 
-## Callback / COM server
+## Callbacks and COM servers
 
-Go method を COM object として公開する registry は現在存在しない。将来実装する場合は少なくとも次が必要である。
+There is currently no registry for exposing Go methods as COM objects. A future implementation needs at least:
 
-- native reference count と Go owner の対応
-- callback target の生存期間と shutdown 時解放
-- 解放後 callback の拒否
-- panic を ABI 境界外へ出さない recovery
-- concurrent call と reentrancy
-- apartment/thread affinity
-- Go pointer retention rule を満たす native allocation
-- special method signature の backend 判定
+- A mapping between native reference counts and Go owners
+- Callback target lifetimes and release at shutdown
+- Rejection of callbacks after release
+- Recovery that prevents panics from crossing the ABI boundary
+- Concurrent calls and reentrancy
+- Apartment/thread affinity
+- Native allocation that satisfies Go pointer retention rules
+- Backend decisions for special method signatures
 
-これらを満たさずに `syscall.NewCallback` 相当だけを生成して対応済みとはしない。
+Generating only an equivalent of `syscall.NewCallback` without these guarantees does not constitute support.
 
-## 検証と現在の限界
+## Verification and current limitations
 
-unit test は IUnknown vtable の pointer-size に応じた offset/size と IID を確認する。Windows smoke test は apartment、embedded-NUL BSTR round trip、CoTaskMem allocation/free を非破壊に確認する。これは任意の SDK interface の method order、marshaling、threading model の検証ではない。全 COM API の ABI verified coverage は未達である。
+Unit tests check the pointer-size-dependent offsets/sizes of the IUnknown vtable and the IID. Windows smoke tests non-destructively check apartments, an embedded-NUL BSTR round trip, and CoTaskMem allocation/free. These tests do not verify method order, marshaling, or threading models for arbitrary SDK interfaces. ABI-verified coverage for all COM APIs has not been achieved.

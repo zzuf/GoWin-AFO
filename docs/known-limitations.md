@@ -1,65 +1,65 @@
-# 既知の制約
+# Known limitations
 
-このリポジトリは包括的生成基盤の縦切りであり、Windows API 全体の完成済みバインディングではない。以下は隠さず coverage/status に反映する。
+This repository is a vertical slice of a comprehensive generation platform, not completed bindings for the entire Windows API. The limitations below are reflected openly in coverage and status.
 
 ## Source ingestion
 
-- WinMD reader は TypeDef/Field/MethodDef/Property/Event/GenericParam を保守的に inventory 化するが、全 ECMA-335 table、coded index、custom attribute の意味を全 API feature へ復元していない。
-- Win32 metadata の NativeArrayInfo、MemorySize、SupportedArchitecture、FreeWith、RetVal、nullability、associated enum、availability を全 symbol へ投影していない。
-- Windows SDK header の全 target/profile matrix を Clang provider で実行していない。macro、inline、SAL、pack、anonymous aggregate、bit field の full ingestion は未達である。
-- native TLB/OLB/DLL resource reader はない。現在の type-library provider は JSON interchange/interface の縦切りである。
-- Windows App SDK meta package は固定されているが、API payload を持つ推移 NuGet 一式の取得・衝突解決・投影は未完成である。
-- Office や外部製品 API は Windows OS coverage に含めていない。
+- The WinMD reader conservatively inventories TypeDef/Field/MethodDef/Property/Event/GenericParam, but does not reconstruct the meaning of every ECMA-335 table, coded index, and custom attribute for every API feature.
+- NativeArrayInfo, MemorySize, SupportedArchitecture, FreeWith, RetVal, nullability, associated enums, and availability from Win32 metadata are not projected onto every symbol.
+- The Clang provider has not run the full target/profile matrix for Windows SDK headers. Full ingestion of macros, inline functions, SAL, pack, anonymous aggregates, and bit fields remains incomplete.
+- There is no native TLB/OLB/DLL resource reader. The current type-library provider is a vertical slice using a JSON interchange/interface.
+- The Windows App SDK meta package is pinned, but fetching, resolving conflicts among, and projecting the complete set of transitive NuGet packages containing API payloads is incomplete.
+- Office and other external product APIs are not included in Windows OS coverage.
 
 ## Generation
 
-- 汎用 emitter は fixture に加え、公式 P/Invoke のうち pointer を含まない固定整数 subset だけを出力する。SAL/ownership/retention/alignment 未投影の pointer、x86 multiword になる64-bit値、full-source Win32/WDK/WinRT inventory の全型・全関数を callable Go package にしていない。
-- 現在の `projection accounting coverage = 100%` は inventory に入った集合の分類率であり、公式 SDK 全シンボルの完成率ではない。
-- verified assembly trampoline はない。float/vector/varargs/特殊 aggregate ABI を一律 `uintptr` call にしない。
-- generated C bridge は小規模 fixture であり、全特殊 signature や C++ flattening を実装していない。
-- packed struct、複雑な union/anonymous aggregate、signed bit field、flexible array の全 header pattern を検証していない。
-- ergonomic layer は一部 runtime helper だけで、raw API 全体の Go string/slice/error/iterator/context wrapper を提供しない。
-- `bindings/win32`、`bindings/wdk`、`bindings/winrt` の13個の runtime-smoke 参照ファイルは専用のレビュー済み template stage で再構築し、`bindings/slice.manifest.json` で hash 検証する（`SLICEGEN-001` 解消）。汎用 IR から導出した full-source projection ではないため公式生成率には含めない。入力 pin が変わる場合は template/ABI の再レビューを要求する。
+- Besides the fixture, the general emitter outputs only the fixed-width integer subset of official P/Invoke functions without pointers. It does not turn pointers whose SAL/ownership/retention/alignment have not been projected, 64-bit values that occupy multiple words on x86, or every type and function in the full-source Win32/WDK/WinRT inventory into callable Go packages.
+- The current `projection accounting coverage = 100%` is the classification rate for the inventoried set, not completion of every official SDK symbol.
+- There is no verified assembly trampoline. Float/vector/varargs/special aggregate ABIs are not reduced uniformly to `uintptr` calls.
+- The generated C bridge is a small fixture; it does not implement every special signature or C++ flattening.
+- Not every header pattern for packed structs, complex unions/anonymous aggregates, signed bit fields, or flexible arrays has been verified.
+- The ergonomic layer consists of a few runtime helpers; it does not provide Go string/slice/error/iterator/context wrappers for the entire raw API.
+- The 13 runtime-smoke reference files in `bindings/win32`, `bindings/wdk`, and `bindings/winrt` are rebuilt by a dedicated reviewed template stage and hash-verified against `bindings/slice.manifest.json` (`SLICEGEN-001` resolved). They are not full-source projections derived from the general IR and are excluded from official generation rates. A change to an input pin requires another template/ABI review.
 
 ## COM
 
-- IUnknown、apartment、BSTR、CoTaskMem の consumer 基礎だけを実装している。
-- SAFEARRAY、VARIANT、PROPVARIANT、IDispatch、一般 coclass activation、connection point は未実装である。
-- Go object を COM callback/server として公開する lifetime/reference-count/panic/thread registry はない。
-- 全 generated interface inheritance と vtable order の oracle 検証は未達である。
+- Only consumer foundations for IUnknown, apartments, BSTR, and CoTaskMem are implemented.
+- SAFEARRAY, VARIANT, PROPVARIANT, IDispatch, general coclass activation, and connection points are not implemented.
+- There is no lifetime/reference-count/panic/thread registry for exposing Go objects as COM callbacks/servers.
+- Oracle verification of all generated interface inheritance and vtable order is incomplete.
 
 ## WinRT
 
-- HSTRING、RoInitialize、IInspectable、activation の基礎だけを実装している。
-- parameterized IID は未実装 error を返す。推測 IID を生成しない。
-- delegate、event token、async action/operation、progress/completion、collection、closed generic の汎用生成は未実装である。
-- contract version、threading model、marshaling behavior、deprecation を全 runtime class へ投影していない。
+- Only foundations for HSTRING, RoInitialize, IInspectable, and activation are implemented.
+- Parameterized IIDs return a not-implemented error. Guessed IIDs are not generated.
+- General generation of delegates, event tokens, async actions/operations, progress/completion, collections, and closed generics is not implemented.
+- Contract versions, threading models, marshaling behavior, and deprecation are not projected onto every runtime class.
 
 ## WDK
 
-- kernel-only export を通常の Go process から callable にしない。標準 Go runtime による kernel driver support はない。
-- user-mode/UMDF/type-only/kernel-only の完全自動分類は未完成である。
-- SDK/WDK duplicate の provenance は保持するが、typedef/custom attribute/layout を含む完全 semantic merge は未達である。
-- WDK header の全 WINVER/NTDDI/architecture ABI probe はない。
+- Kernel-only exports are not made callable from ordinary Go processes. The standard Go runtime does not support kernel drivers.
+- Fully automatic classification of user-mode/UMDF/type-only/kernel-only is incomplete.
+- Provenance for SDK/WDK duplicates is retained, but complete semantic merging, including typedefs/custom attributes/layouts, is not implemented.
+- There are no ABI probes for the full WINVER/NTDDI/architecture matrix of WDK headers.
 
 ## Verification
 
-- checked-in ABI oracle は Windows SDK 10.0.26100.0 の小規模 fixture の x86/x64 実行結果だけである。5 record/union、2 constant、1 GUID、1 bit field、2 function signature、IUnknown の3 slotを検査するが、packed record、callback ABI、float ABI、aggregate value ABI、flexible array、generated C bridgeの独立oracle比較は未実装である（`ABI-001`）。
-- ARM64 は C++/Go cross-compile を行うが、x64 hosted runner では probe/runtime を実行しない。ARM64 runtime-verified とは表示しない。
-- ARM64EC は独立 ABI と認識するが、通常 Go target がないため callable backend は提供しない。
-- oracle result と全 inventory symbol/Go layout の自動 mapping は未完成であり、ABI verified coverage は限定的である。
-- runtime smoke は非破壊な少数 API に限る。管理者操作、driver、service、registry write、system setting change は試験しない。
-- SDK update workflow は新 version の discovery と現在の pin の再現性確認までである。candidate の lock/hash を自動適用して生成・ABI 差分を作る段階は未実装で、breaking report も現在 file-level で semantic API compatibility report ではない（`SDKUP-001`）。
+- The checked-in ABI oracle contains only executed x86/x64 results for a small Windows SDK 10.0.26100.0 fixture. It checks 5 records/unions, 2 constants, 1 GUID, 1 bit field, 2 function signatures, and 3 IUnknown slots, but independent oracle comparisons for packed records, callback ABI, float ABI, aggregate value ABI, flexible arrays, and the generated C bridge are not implemented (`ABI-001`).
+- ARM64 is cross-compiled with C++/Go, but the probe/runtime is not executed on an x64-hosted runner. It is not reported as ARM64 runtime-verified.
+- ARM64EC is recognized as a distinct ABI, but no callable backend is offered because there is no ordinary Go target.
+- Automatic mapping between oracle results and all inventory symbols/Go layouts is incomplete, so ABI verified coverage is limited.
+- Runtime smoke tests cover only a small number of non-destructive APIs. Administrator operations, drivers, services, registry writes, and system setting changes are not tested.
+- The SDK update workflow goes only as far as discovering new versions and confirming reproducibility of the current pins. Automatically applying candidate locks/hashes to generate source and ABI diffs is not implemented, and the breaking report is currently file-level, not a semantic API compatibility report (`SDKUP-001`).
 
-## Platform と配布
+## Platform and distribution
 
-- module path は指定された repository に合わせ `github.com/zzuf/GoWin-AFO` に移行済み。GitHub への source 公開は stable API/release の保証ではなく、網羅率と ABI の制約は引き続き適用される。
-- optional な外部 SDK provider がない場合は `external-sdk-not-installed` として分類する。固定 Windows SDK/WinRT source は required なので欠落を fetch/verify failure にし、Windows App SDK の transitive API package 未展開は `missing-upstream-metadata` として区別する。
+- The module path has been migrated to `github.com/zzuf/GoWin-AFO` to match the specified repository. Publishing the source on GitHub does not guarantee a stable API/release; coverage and ABI limitations still apply.
+- When an optional external SDK provider is absent, it is classified as `external-sdk-not-installed`. Pinned Windows SDK/WinRT sources are required, so their absence causes fetch/verify failure. Unexpanded transitive Windows App SDK API packages are distinguished as `missing-upstream-metadata`.
 
-- bindings/bridge/report/raw dump を全て stage してから順次 rename し、通常の書き込み error は全対象を rollback する（`ATOMIC-001` の通常失敗経路を改善）。rollback 自体が失敗した場合は backup を残し、その場所を error に含める。複数 rename の間の process crash/power loss を自動復旧する永続 journal は未実装（`ATOMIC-CRASH-001`）。その場合は残った `.winapigen-stage-*` の backup を確認して復旧し、再生成で整合性を検査する。
-- SDK/header/NuGet payload は license と再配布条件に従い、原則 repository に vendor しない。clean generation は network access と、WinRT/ABI 検証には該当 Windows SDK install を必要とする。
-- System32 loader は実装済みだが、任意 app-local DLL の trusted absolute-path policy は未実装である。
+- Bindings/bridge/reports/raw dumps are all staged before sequential renames, and ordinary write errors roll back every target (improving the ordinary failure path of `ATOMIC-001`). If rollback itself fails, the backup is retained and its location included in the error. A durable journal for automatic recovery from a process crash/power loss between multiple renames is not implemented (`ATOMIC-CRASH-001`). In that case, inspect the remaining `.winapigen-stage-*` backups to recover, then regenerate to check consistency.
+- SDK/header/NuGet payloads are subject to license and redistribution terms and generally are not vendored into the repository. Clean generation requires network access and, for WinRT/ABI verification, the relevant Windows SDK installation.
+- The System32 loader is implemented, but a trusted absolute-path policy for arbitrary app-local DLLs is not.
 
-## 完了と誤認しないために
+## Avoiding false claims of completion
 
-未実装項目は `generated-*` にせず、`unsupported-go-abi`、`unsupported-projection`、`kernel-mode-only`、`missing-upstream-metadata`、`external-sdk-not-installed` 等の reason 付き status にする。新しい source/provider が認識できない symbol を黙って分母から落とさず、diagnostic と ingestion limitation を更新する。
+Unimplemented items are not assigned `generated-*`. They receive statuses such as `unsupported-go-abi`, `unsupported-projection`, `kernel-mode-only`, `missing-upstream-metadata`, and `external-sdk-not-installed` with reasons. If a new source/provider cannot recognize symbols, do not silently omit them from the denominator; update diagnostics and the ingestion limitations.

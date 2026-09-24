@@ -1,34 +1,34 @@
 # WinRT
 
-## 対応範囲
+## Scope
 
-現在の `runtime/winrt` は WinRT consumer の基礎 ABI を実装する。
+The current `runtime/winrt` implements the foundational ABI for WinRT consumers:
 
 - `RoInitialize` / `RoUninitialize`
-- owned `HSTRING` の作成、読み取り、削除
-- `IUnknown` を prefix に持つ `IInspectable`
-- `GetIids`、`GetRuntimeClassName`、`GetTrustLevel`
-- `IActivationFactory` と `ActivateInstance`
+- Creation, reading, and deletion of owned `HSTRING` values
+- `IInspectable` with an `IUnknown` prefix
+- `GetIids`, `GetRuntimeClassName`, and `GetTrustLevel`
+- `IActivationFactory` and `ActivateInstance`
 - `RoGetActivationFactory` / `RoActivateInstance`
-- `Windows.Foundation.Uri` activation factory の小規模 generated example
+- A small generated example for the `Windows.Foundation.Uri` activation factory
 
-これらは Windows SDK `10.0.26100.0` の縦切りであり、Windows contract WinMD 全体の generated projection ではない。
+These form a vertical slice of Windows SDK `10.0.26100.0`, not a generated projection of the entire Windows contract WinMD.
 
-## Apartment
+## Apartments
 
-WinRT initialization も OS thread に属する。`EnterApartment` は goroutine を OS thread に固定し、`RoInitialize` 成功後に owner を返す。`Close` は同じ goroutine で `RoUninitialize` を呼び、thread lock を解除する。STA/MTA は `RO_INIT_SINGLETHREADED` と `RO_INIT_MULTITHREADED` で明示する。
+WinRT initialization also belongs to an OS thread. `EnterApartment` pins the goroutine to an OS thread and returns an owner after `RoInitialize` succeeds. `Close` calls `RoUninitialize` on the same goroutine and releases the thread lock. STA/MTA is selected explicitly with `RO_INIT_SINGLETHREADED` or `RO_INIT_MULTITHREADED`.
 
-runtime class metadata の threading model と marshaling behavior を full-source provider が全面的に取り込む処理はまだない。生成 wrapper が自由に goroutine 間移動できるとは仮定しない。
+The full-source provider does not yet fully ingest runtime class metadata for threading models and marshaling behavior. Do not assume generated wrappers can move freely between goroutines.
 
 ## HSTRING
 
-`HString` は `WindowsCreateString` で作られた handle を所有し、`Close` で `WindowsDeleteString` を一度だけ呼ぶ。`WindowsGetStringRawBuffer` が返した length を検査してから Go string へ copy する。HSTRING 自体は長さ付きなので embedded NUL を保持する。
+`HString` owns a handle created by `WindowsCreateString` and calls `WindowsDeleteString` exactly once in `Close`. It checks the length returned by `WindowsGetStringRawBuffer` before copying to a Go string. HSTRING itself is length-prefixed and preserves embedded NULs.
 
-runtime class name は activation protocol の識別子であるため、空文字列と embedded NUL を拒否する。これにより文字列境界の曖昧化を避ける。HSTRING handle を `Close` 後に利用してはならず、native call 中の wrapper lifetime は `runtime.KeepAlive` で保つ。
+A runtime class name identifies an activation protocol, so empty strings and embedded NULs are rejected. This avoids ambiguity at the string boundary. Do not use an HSTRING handle after `Close`; `runtime.KeepAlive` preserves the wrapper lifetime during native calls.
 
-## IInspectable と activation
+## IInspectable and activation
 
-`IInspectableVTable` は IUnknown の 3 slot に続いて次の順序を持つ。
+`IInspectableVTable` has these slots after the three IUnknown slots:
 
 | Slot | Method |
 |---:|---|
@@ -36,7 +36,7 @@ runtime class name は activation protocol の識別子であるため、空文�
 | 4 | `GetRuntimeClassName` |
 | 5 | `GetTrustLevel` |
 
-`GetIids` の結果は Go slice へ copy した後、native 配列を `CoTaskMemFree` する。runtime class name は owned HSTRING として返す。activation factory/instance の成功結果は owned COM reference なので、呼出側が `Release` する。
+The result of `GetIids` is copied into a Go slice before the native array is freed with `CoTaskMemFree`. A runtime class name is returned as an owned HSTRING. Successful activation factory/instance results are owned COM references that the caller must `Release`.
 
 ```go
 apartment, status := winrt.EnterApartment(winrt.RO_INIT_MULTITHREADED)
@@ -54,33 +54,33 @@ defer factory.Release()
 
 ## Metadata projection
 
-WinRT provider は公式 `Microsoft.Windows.SDK.CPP/10.0.26100.7705` の `c/UnionMetadata/10.0.26100.0/Windows.winmd` を version/archive hash 固定した required input として扱う。ランナーに installed SDK があるかや、その servicing revision には依存しない。現在の WinMD reader は WinRT interface、runtime class、delegate、generic arity、property、event の基本種別を inventory 化できるが、次の意味情報を完全には投影していない。
+The WinRT provider treats `c/UnionMetadata/10.0.26100.0/Windows.winmd` from the official `Microsoft.Windows.SDK.CPP/10.0.26100.7705` as a required input with a pinned version and archive hash. It does not depend on whether the runner has an installed SDK or on its servicing revision. The current WinMD reader can inventory the basic kinds of WinRT interfaces, runtime classes, delegates, generic arity, properties, and events, but does not fully project the following semantic information:
 
-- default interface と activation factory attribute
-- contract version と deprecation
-- threading model と marshaling behavior
-- method parameter の ownership/nullability
-- event add/remove pairing と `EventRegistrationToken`
-- async interface と progress/completion handler
-- closed generic instantiation と signature grammar
-- collection interface の ergonomic projection
+- Default interface and activation factory attributes
+- Contract versions and deprecation
+- Threading models and marshaling behavior
+- Method parameter ownership/nullability
+- Event add/remove pairing and `EventRegistrationToken`
+- Async interfaces and progress/completion handlers
+- Closed generic instantiations and signature grammar
+- Ergonomic projection of collection interfaces
 
-そのため full-source WinRT symbol は現在原則 `unsupported-projection` / type-only inventory であり、callable として emitter へ流さない。
+Consequently, full-source WinRT symbols currently remain `unsupported-projection` / type-only inventory by default and are not sent to the emitter as callable.
 
-## Generic と parameterized IID
+## Generics and parameterized IIDs
 
-WinRT generic interface の IID は単なる generic type の GUID ではなく、canonical WinRT signature と規定 namespace に基づく parameterized IID 計算が必要である。現在の `ParameterizedIID` は意図的に `ErrParameterizedIIDUnsupported` を返し、zero GUID を返す。推測した IID で `QueryInterface` を行わない。
+The IID of a WinRT generic interface is not simply the GUID of the generic type; it requires a parameterized IID calculation based on the canonical WinRT signature and the specified namespace. The current `ParameterizedIID` intentionally returns `ErrParameterizedIIDUnsupported` and a zero GUID. Do not call `QueryInterface` with a guessed IID.
 
-closed generic metadata の生成と任意 type argument の runtime 計算は未実装である。この項目が検証されるまで generic collection、async operation、delegate を対応済みと数えない。
+Generation of closed generic metadata and runtime calculation for arbitrary type arguments are not implemented. Until this is verified, generic collections, async operations, and delegates are not counted as supported.
 
-## Delegate、event、async
+## Delegates, events, and async
 
-delegate object、event registration/removal、`IAsyncAction`、`IAsyncOperation<T>`、progress/completion handler は未実装である。これらには COM reference、callback lifetime、apartment transition、completion race、panic containment、parameterized IID が関係する。単なる function pointer や channel wrapper で ABI を省略しない。
+Delegate objects, event registration/removal, `IAsyncAction`, `IAsyncOperation<T>`, and progress/completion handlers are not implemented. They involve COM references, callback lifetimes, apartment transitions, completion races, panic containment, and parameterized IIDs. Do not bypass the ABI with only a function pointer or channel wrapper.
 
-## HRESULT と所有権
+## HRESULT and ownership
 
-WinRT raw call は HRESULT を保持し、failure を severity bit で判定する。成功時の status も捨てない。out pointer/HSTRING は成功後だけ owner として採用し、failure 時に nil/zero でない可能性を安易に使用しない。IInspectable/IActivationFactory は finalizer ではなく明示 `Release`、HString は明示 `Close` を基本とする。
+WinRT raw calls preserve HRESULT and use its severity bit to determine failure. They also retain success statuses. Treat out pointers/HSTRINGs as owned only after success; do not casually use values that may be non-nil/nonzero on failure. Explicit `Release` is the baseline for IInspectable/IActivationFactory, and explicit `Close` for HString, rather than finalizers.
 
-## 検証
+## Verification
 
-unit test は IInspectable vtable offset、parameterized IID の明示 failure、activation name の NUL rejection を確認する。Windows smoke test は HSTRING の embedded-NUL round trip と `Windows.Foundation.Uri` の activation factory 取得・Release を確認する。これは WinRT 全 runtime class、contract、architecture の実行検証ではない。
+Unit tests check IInspectable vtable offsets, explicit failure for parameterized IIDs, and NUL rejection in activation names. Windows smoke tests check an embedded-NUL HSTRING round trip and acquisition/Release of the `Windows.Foundation.Uri` activation factory. They do not verify execution across every WinRT runtime class, contract, or architecture.

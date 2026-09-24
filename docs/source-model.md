@@ -1,38 +1,38 @@
-# 入力 source model
+# Input source model
 
-## Lock file が正本
+## The lock file is authoritative
 
-入力の正本は `sources.lock.json` である。ローカル cache や NuGet の latest version は正本ではない。各 source は少なくとも次を固定する。
+`sources.lock.json` is the authoritative input. Neither the local cache nor the latest NuGet version is authoritative. Each source pins at least:
 
-- `id`: provenance と安定 ID の一部になる source 識別子
-- `type`: provider の選択に使う source type
-- `package` と `version`
-- `retrieval`: 固定 NuGet URL または `windows-sdk://` locator
-- artifact 全体の `sha256`
+- `id`: source identifier used in provenance and stable IDs
+- `type`: source type used to select a provider
+- `package` and `version`
+- `retrieval`: fixed NuGet URL or `windows-sdk://` locator
+- `sha256` of the entire artifact
 - `licenseIdentifier`
-- `architectures` と `windowsSDKVersion`
-- cache へ抽出する `files`
+- `architectures` and `windowsSDKVersion`
+- `files` to extract into the cache
 - `dependsOn`
-- `required`: 欠落を fetch/verify failure にするか
+- `required`: whether absence causes fetch/verify failure
 
-取得日時は lock と generated artifact に記録しない。version と hash が同じなら同じ入力として扱う。
+Retrieval dates are not recorded in the lock or generated artifacts. Inputs with the same version and hash are treated as identical.
 
-## 現在固定している source
+## Currently pinned sources
 
-| Source ID | 入力 | Version | SDK | Required |
+| Source ID | Input | Version | SDK | Required |
 |---|---|---:|---:|---:|
 | `microsoft-win32metadata` | `Microsoft.Windows.SDK.Win32Metadata` | `71.0.26-preview` | `10.0.26100.0` | yes |
 | `microsoft-wdkmetadata` | `Microsoft.Windows.WDK.Win32Metadata` | `0.13.25-experimental` | `10.0.26100.0` | yes |
-| `windows-sdk-winrt` | `Microsoft.Windows.SDK.CPP` の UnionMetadata | `10.0.26100.7705` | `10.0.26100.0` | yes |
+| `windows-sdk-winrt` | UnionMetadata from `Microsoft.Windows.SDK.CPP` | `10.0.26100.7705` | `10.0.26100.0` | yes |
 | `windows-app-sdk` | `Microsoft.WindowsAppSDK` meta package | `2.5.1` | `10.0.26100.0` target | yes |
 
-Windows App SDK の lock は現在 meta package 本体だけを固定している。API を持つ推移 package 群の version/hash/provider 展開は未実装であり、インストール有無ではなく upstream 展開不足を示す `missing-upstream-metadata` sentinel として扱う。WinRT の `Windows.winmd` は固定した公式 NuGet から取得する required source であり、欠落時は fetch/verify を失敗させる。
+The Windows App SDK lock currently pins only the meta package itself. Expanding the versions, hashes, and providers for the transitive packages containing APIs is not implemented. This is treated as a `missing-upstream-metadata` sentinel for incomplete upstream expansion, rather than an indication of whether the package is installed. WinRT `Windows.winmd` is a required source retrieved from a pinned official NuGet package; absence causes fetch/verify failure.
 
-SDK の servicing revision が異なっても install directory は `10.0.26100.0` のままなので、ディレクトリ名だけでは入力を固定できない。WinRT は `Microsoft.Windows.SDK.CPP/10.0.26100.7705` の `c/UnionMetadata/10.0.26100.0/Windows.winmd` を使い、NuGet archive 全体の SHA-256 を lock する。従来の installed-SDK 入力と WinMD 本体の SHA-256 `e2dee80d011cb9fc1276a0bd9f244f7a58d5ca72fe906a56e90d61c68cf8601a` が一致することを確認済み。provider は lock の `files` から唯一の WinMD を選び、cache root のファイル名を仮定しない。
+The installation directory remains `10.0.26100.0` even when the SDK servicing revision differs, so its name alone cannot pin the input. WinRT uses `c/UnionMetadata/10.0.26100.0/Windows.winmd` from `Microsoft.Windows.SDK.CPP/10.0.26100.7705` and locks the SHA-256 of the entire NuGet archive. The WinMD file's SHA-256, `e2dee80d011cb9fc1276a0bd9f244f7a58d5ca72fe906a56e90d61c68cf8601a`, has been confirmed to match the former installed-SDK input. The provider selects the sole WinMD from the lock's `files` and does not assume a filename at the cache root.
 
-## 取得と検証
+## Retrieval and verification
 
-標準操作は次のとおりである。
+Standard operations are:
 
 ```text
 go run ./cmd/winapisource fetch
@@ -41,46 +41,46 @@ go run ./cmd/winapisource list
 go run ./cmd/winapisource update --dry-run
 ```
 
-`fetch` は source ごとに temporary staging directory を作る。HTTPS artifact は 1 GiB を上限として保存し、artifact 全体の SHA-256 が一致してから lock に列挙した file だけを ZIP から抽出する。Windows SDK locator は `WindowsSdkDir`、次に標準の Windows Kits directory を参照する。cache の install は directory rename で行い、中途半端な cache を公開しない。
+`fetch` creates a temporary staging directory per source. It saves HTTPS artifacts up to a 1 GiB limit and extracts only files listed in the lock from ZIP after verifying the SHA-256 of the entire artifact. The Windows SDK locator checks `WindowsSdkDir`, then the standard Windows Kits directory. The cache is installed by directory rename so a partial cache is not exposed.
 
-`verify` は artifact hash、cache の source ID/version/hash、必須 file の存在に加え、抽出済み file の byte 列を lock 済み archive entry または SDK artifact と比較する。required source の欠落・不一致は command 全体を失敗させる。optional source の不在は明示状態として返し、存在するかのように生成しない。
+`verify` checks the artifact hash, source ID/version/hash in the cache, and presence of required files. It also compares extracted file bytes against the locked archive entry or SDK artifact. Missing or mismatched required sources fail the entire command. An absent optional source is reported as an explicit state and is not generated as though present.
 
-`update --dry-run` は NuGet version index を照会するだけで lock を変更しない。SDK update を main へ自動 merge する設計ではない。
+`update --dry-run` only queries the NuGet version index and does not change the lock. SDK updates are not merged into main automatically.
 
 ## Provider contract
 
-すべての provider は `Type()` と `Ingest(context, Request)` を実装し、次を返す。
+Every provider implements `Type()` and `Ingest(context, Request)` and returns:
 
-- lock 情報から作った `Source`
-- provenance 付きの `Symbol` 配列
-- debug 用の raw 表現
-- parser warning/error の `Diagnostic`
+- `Source` constructed from lock information
+- An array of `Symbol` values with provenance
+- A raw representation for debugging
+- `Diagnostic` values for parser warnings/errors
 
-外部 SDK provider は install detection を追加し、type library provider は LIBID、coclass、interface、dispinterface、enum、record、alias、method/property/event、IID/CLSID/DISPID を独立 inventory として返す。
+External SDK providers additionally detect installation. Type-library providers return LIBID, coclass, interface, dispinterface, enum, record, alias, method/property/event, and IID/CLSID/DISPID as independent inventory items.
 
 ### WinMD provider
 
-現在は `github.com/microsoft/go-winmd/winmd` を主 parser とする。PE/ECMA-335 metadata を開き、table count を raw dump に残し、`TypeDef`、その範囲内の `Field` と `MethodDef`、さらに `Property`、`Event`、`GenericParam` を symbol 化する。P/Invoke の `ImplMap` から DLL、entry point、calling convention、SetLastError を読み、COM/WinRT interface method には暫定 vtable index を付ける。signature parse failure と table row decode failure は、捨てずに安定した `source-parse-error` symbol と diagnostic にする。
+The primary parser is currently `github.com/microsoft/go-winmd/winmd`. It opens PE/ECMA-335 metadata, records table counts in the raw dump, and turns `TypeDef`, their `Field` and `MethodDef` ranges, plus `Property`, `Event`, and `GenericParam` into symbols. It reads DLL, entry point, calling convention, and SetLastError from P/Invoke `ImplMap` and assigns provisional vtable indexes to COM/WinRT interface methods. Signature parse failures and table row decode failures are retained as stable `source-parse-error` symbols and diagnostics rather than discarded.
 
-これはまだ WinMD の完全な意味投影ではない。custom attribute の NativeArrayInfo、MemorySize、SupportedArchitecture、Deprecated、NativeTypedef、RetVal、FreeWith、associated enum、nullability、contract/threading/marshaling を全面的に解釈していない。`MemberRef` などは raw table count があることと symbol inventory 済みであることは同義ではない。
+This is not yet a complete semantic projection of WinMD. NativeArrayInfo, MemorySize, SupportedArchitecture, Deprecated, NativeTypedef, RetVal, FreeWith, associated enums, nullability, and contract/threading/marshaling custom attributes are not comprehensively interpreted. A raw table count for `MemberRef`, for example, does not mean its rows are inventoried as symbols.
 
-`generator/internal/ecma335` は upstream reader を置き換える parser ではなく、compressed integer、blob、coded index、method signature など、bounds check を強める補助実装である。
+`generator/internal/ecma335` does not replace the upstream reader. It is a supplementary implementation with stronger bounds checks for compressed integers, blobs, coded indexes, method signatures, and related constructs.
 
 ### Clang header provider
 
-header provider は C/C++ declaration を正規表現で解析せず、Clang の `-Xclang -ast-dump=json` を読む。target triple は 386/amd64/arm64 を分け、desktop/appcontainer/WDK profile の define を分ける。現在は record、union、enum、typedef、function、constant と bit-field width の基本 inventory を作るが、ほとんどを `unsupported-projection` とし、安全な C semantic projection が完成するまで callable source を出さない。
+The header provider reads Clang's `-Xclang -ast-dump=json` rather than parsing C/C++ declarations with regular expressions. Target triples distinguish 386/amd64/arm64, and defines distinguish desktop/appcontainer/WDK profiles. It currently creates a basic inventory of records, unions, enums, typedefs, functions, constants, and bit-field widths, but classifies most as `unsupported-projection` and emits no callable source until safe C semantic projection is complete.
 
-macro token、preprocessor condition の完全な provenance、pack/layout dump、SAL、inline function の式 semantics は未統合である。debug AST dump からは Clang process address と machine-local path を除き、source location は basename/line/column だけを保持する。
+Macro tokens, complete provenance for preprocessor conditions, pack/layout dumps, SAL, and expression semantics for inline functions are not integrated. Clang process addresses and machine-local paths are removed from debug AST dumps; source locations retain only basename/line/column.
 
-### Type library と外部 SDK
+### Type libraries and external SDKs
 
-現在の type library provider は native TLB loader ではなく、外部 reader が作る決定的 JSON interchange を検査する。Office などの product API は `typelib` source として OS coverage から分離し、初期状態では inventory-only である。
+The current type-library provider does not load native TLBs. It validates deterministic JSON interchange produced by an external reader. Product APIs such as Office are separate `typelib` sources outside OS coverage and are initially inventory-only.
 
-WebView2 等を追加する `ExternalSDKProvider` interface はあるが、具体 provider は未実装である。未導入 source を OS symbol として捏造せず、`external-sdk-not-installed` として集計する。
+An `ExternalSDKProvider` interface exists for WebView2 and similar SDKs, but no concrete provider is implemented. Sources not installed are not fabricated as OS symbols; they are counted as `external-sdk-not-installed`.
 
-## Raw dump、IR dump、inspect
+## Raw dumps, IR dumps, and inspect
 
-`winapigen generate --all --dump-raw` は provider raw dump を `coverage/raw/<source-id>.json` に保存する。正規化後の `coverage/inventory.json.gz` は決定的な gzip IR dump であり、`winapigen inspect` は qualified name、native name、stable ID でこれを検索する。
+`winapigen generate --all --dump-raw` saves provider raw dumps under `coverage/raw/<source-id>.json`. The normalized `coverage/inventory.json.gz` is a deterministic gzip IR dump, which `winapigen inspect` searches by qualified name, native name, or stable ID.
 
 ```text
 go run ./cmd/winapigen inspect --symbol Windows.Win32.Foundation.HANDLE
@@ -88,28 +88,28 @@ go run ./cmd/winapigen inspect --native CreateFileW
 go run ./cmd/winapigen inspect --id sha256:... --json
 ```
 
-raw dump と IR は debug artifact であり、再配布条件を無視して upstream binary を repository へ vendor する仕組みではない。
+Raw dumps and IR are debugging artifacts, not a mechanism for vendoring upstream binaries into the repository without regard to redistribution terms.
 
-## Provenance と重複
+## Provenance and duplicates
 
-各 symbol は source ID、input file、metadata table/row または header location を持つ。SDK と WDK の同じ native declaration は、source ID を消して一つへ潰さない。現行実装は namespace、kind、name、signature、architecture が一致する重複を検出し、後続 symbol に `duplicateProjectionOf` を付ける。これは出自を保った重複検出であり、layout equivalence や優先 source を完全に解決する semantic deduplication ではない。
+Each symbol carries a source ID, input file, and metadata table/row or header location. An identical native declaration in SDK and WDK is not collapsed into one by removing its source ID. The current implementation detects duplicates with matching namespace, kind, name, signature, and architecture and marks subsequent symbols with `duplicateProjectionOf`. This preserves provenance while detecting duplicates; it is not semantic deduplication that fully resolves layout equivalence or source precedence.
 
-## Manual override
+## Manual overrides
 
-override JSON は schema version 1 とし、次の全項目を必須にする。
+Override JSON uses schema version 1 and requires all of the following:
 
-- override ID
-- source ID
-- SDK version の inclusive 範囲
-- stable symbol ID
-- 変更前と変更後
-- 理由
-- header、ABI probe、upstream issue の根拠
-- 回帰テスト識別子
-- upstream 修正後の削除条件
+- Override ID
+- Source ID
+- Inclusive SDK version range
+- Stable symbol ID
+- Before and after values
+- Reason
+- Evidence from a header, ABI probe, or upstream issue
+- Regression test identifier
+- Removal condition after an upstream fix
 
-適用時は `before` を現在 IR と比較するため、SDK 更新で前提が変われば黙って上書きせず失敗する。適用後は元の projection status/backend を保持し、`manualOverride=true` を独立集計する。すでに callable な function の ABI 本体を override が変更する場合は capability 判定を迂回できないよう拒否する。
+On application, `before` is compared against the current IR, so an SDK update that changes an assumption fails rather than silently overwriting it. After application, the original projection status/backend is retained, and `manualOverride=true` is counted separately. An override that changes the ABI implementation of an already callable function is rejected so it cannot bypass capability checks.
 
-## 入力セキュリティ
+## Input security
 
-lock にない filename は抽出しない。absolute path、path traversal、unsafe archive entry、oversize artifact、hash mismatch を拒否する。source file の path は generated header へローカル絶対 path として埋め込まない。ライセンス条件が不明な SDK/header/NuGet 内容を cache 外の version control へ自動追加しない。
+Files whose names are absent from the lock are not extracted. Absolute paths, path traversal, unsafe archive entries, oversized artifacts, and hash mismatches are rejected. Local absolute source-file paths are not embedded in generated headers. SDK/header/NuGet contents with unclear license terms are not automatically added to version control outside the cache.

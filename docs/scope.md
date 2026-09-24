@@ -1,94 +1,94 @@
-# スコープ
+# Scope
 
-## 現在地
+## Current state
 
-このリポジトリは、Windows API 全体の完成済みバインディング集ではない。現在の実装は、Windows SDK `10.0.26100.0` を基準に、取得、ハッシュ検証、WinMD 読み取り、正規化 IR、型付き override、決定的な Go 出力、実行時 ABI、網羅性集計を接続した小規模な end-to-end 縦切りである。
+This repository is not a completed collection of bindings for the entire Windows API. Based on Windows SDK `10.0.26100.0`, the current implementation is a small end-to-end vertical slice connecting retrieval, hash verification, WinMD reading, normalized IR, typed overrides, deterministic Go output, runtime ABI support, and coverage accounting.
 
-コミット済みの縦切りは、Win32 の foundation 型と一部の Kernel32 API、COM/WinRT の基礎 runtime、WDK の type-only 例を含む。`generator/testdata/e2e/source.json` は 23 個の検証用レコードを持つが、これはこのプロジェクト自身の fixture であり、Microsoft 公式 API の網羅率の分母へ数えてはならない。
+The committed vertical slice includes Win32 foundation types and some Kernel32 APIs, foundational COM/WinRT runtimes, and WDK type-only examples. `generator/testdata/e2e/source.json` contains 23 validation records, but this is the project's own fixture and must not count in the denominator for official Microsoft API coverage.
 
-`winapigen generate --all` は取得済み WinMD の `TypeDef`、`Field`、`MethodDef`、`Property`、`Event`、`GenericParam` を保守的にインベントリ化する。公式 metadata の P/Invoke のうち、DLL/entry point が固定され、pointer、64-bit値渡し、特殊 ABI、未解決の名前付き型を含まない固定整数 subset だけを `generated-purego` として namespace 別 `bindings/generated` へ出力する。pointer は SAL、保持期間、ownership、x86 alignment を解釈するまで生成しない。それ以外の大多数は理由付きで分類したまま残すため、全 Win32、全 WDK、全 WinRT、Windows App SDK の Go 投影は未達である。
+`winapigen generate --all` conservatively inventories `TypeDef`, `Field`, `MethodDef`, `Property`, `Event`, and `GenericParam` from retrieved WinMD. Of the official metadata's P/Invoke functions, it outputs only the fixed-width integer subset with fixed DLL/entry points and without pointers, 64-bit values passed by value, special ABIs, or unresolved named types as `generated-purego` under namespace-specific `bindings/generated` packages. Pointers are not generated until SAL, retention period, ownership, and x86 alignment are interpreted. Most other symbols remain classified with reasons, so full Go projection of Win32, WDK, WinRT, and Windows App SDK has not been achieved.
 
-## 目標とする API 面
+## Target API surface
 
-長期的な対象は次のとおりである。
+Long-term targets are:
 
-- Windows SDK の公開 Win32 API
-- COM consumer 用の interface、GUID、vtable、所有権情報
-- Windows Runtime / WinRT の contract metadata と runtime class
-- WDK の型、定数、およびユーザーモードで利用可能と証明できる API
-- Windows App SDK の WinMD と native API
-- WinMD にない SDK header の macro、inline、bit field、pack、条件付き宣言
-- TLB、OLB、DLL 埋め込み type library の独立したインベントリ
-- WebView2、DirectX Agility SDK、DirectStorage などの外部 SDK provider
+- Public Win32 APIs in the Windows SDK
+- Interfaces, GUIDs, vtables, and ownership information for COM consumers
+- Windows Runtime / WinRT contract metadata and runtime classes
+- WDK types, constants, and APIs proven usable in user mode
+- Windows App SDK WinMD and native APIs
+- Macros, inline functions, bit fields, packing, and conditional declarations in SDK headers that are absent from WinMD
+- Independent inventories of TLB, OLB, and DLL-embedded type libraries
+- External SDK providers for WebView2, DirectX Agility SDK, DirectStorage, and similar products
 
-外部製品の type library と外部 SDK は、Windows OS API と別の source ID と別のカバレッジ分母を持つ。Office などを OS 網羅率へ混ぜない。
+External product type libraries and SDKs have separate source IDs and coverage denominators from Windows OS APIs. Office, for example, is not mixed into OS coverage.
 
-## 現在実装されている縦切り
+## Currently implemented vertical slice
 
-| 領域 | 現在の実装 | 保証しないこと |
+| Area | Current implementation | Not guaranteed |
 |---|---|---|
-| Source | version と SHA-256 を固定した NuGet / ローカル Windows SDK 取得、選択ファイル抽出、再検証 | 任意の SDK install の自動発見、App SDK の推移依存 API 一式 |
-| WinMD | `microsoft/go-winmd` による PE/ECMA-335 読み取り、TypeDef/Field/MethodDef/Property/Event/GenericParam の保守的インベントリ | custom attribute の完全な意味付け、全 table の全シンボル化、完全な layout |
-| Header | Clang AST JSON provider と 386/amd64/arm64 target/profile 設定 | SDK header 全体の統合実行、macro 展開結果と inline の安全な Go 変換 |
-| Type library | JSON interchange と provider interface | native TLB/OLB/DLL resource reader、Automation marshaling |
-| IR | 安定 ID、provenance、型、関数、availability、ownership、status/backend | 公式 metadata の全属性を完全に復元すること |
-| Go 出力 | fixture の型/union/bit field/flexible-array/COM/C bridge と、公式 Win32 metadata の証明可能な単純 P/Invoke subset を namespace package へ決定的に生成 | 公式 WinMD 全型・全関数・全 namespace の callable 出力 |
-| Runtime | System32 限定 lazy loader、整数/ポインター call、HRESULT/NTSTATUS、UTF-16、IUnknown、BSTR、CoTaskMem、HSTRING、IInspectable、activation | 特殊 ABI 全般、COM server、SAFEARRAY/VARIANT、WinRT async/event/generic IID |
-| WDK | 代表型の type-only 投影、kernel-only 関数の明示分類 | 標準 Go runtime でのカーネルドライバー生成・実行 |
+| Source | NuGet / local Windows SDK retrieval pinned by version and SHA-256, selected file extraction, reverification | Automatic discovery of arbitrary SDK installations; all transitive App SDK API dependencies |
+| WinMD | PE/ECMA-335 reading with `microsoft/go-winmd`; conservative inventory of TypeDef/Field/MethodDef/Property/Event/GenericParam | Complete interpretation of custom attributes, symbolization of every table row, complete layouts |
+| Header | Clang AST JSON provider and 386/amd64/arm64 target/profile settings | Integrated execution over all SDK headers; safe Go translation of macro expansion results and inline functions |
+| Type library | JSON interchange and provider interface | Native TLB/OLB/DLL resource reader; Automation marshaling |
+| IR | Stable IDs, provenance, types, functions, availability, ownership, status/backend | Complete reconstruction of every official metadata attribute |
+| Go output | Deterministic generation of fixture types/unions/bit fields/flexible arrays/COM/C bridge and a provable simple P/Invoke subset from official Win32 metadata into namespace packages | Callable output for every official WinMD type, function, and namespace |
+| Runtime | System32-only lazy loader, integer/pointer calls, HRESULT/NTSTATUS, UTF-16, IUnknown, BSTR, CoTaskMem, HSTRING, IInspectable, activation | Special ABIs in general, COM servers, SAFEARRAY/VARIANT, WinRT async/events/generic IIDs |
+| WDK | Type-only projection of representative types; explicit classification of kernel-only functions | Building and running kernel drivers with the standard Go runtime |
 
-## 「完全網羅」と百分率
+## “Complete coverage” and percentages
 
-このプロジェクトでいう完全網羅は「すべてを Pure Go で呼べる」という意味ではない。公式入力から認識した全シンボルについて、安定 ID、出自、architecture/profile、生成状態または非生成理由、ABI 検証状態が機械可読であることを意味する。
+Complete coverage in this project does not mean that everything is callable from Pure Go. It means that for every symbol recognized from official inputs, the stable ID, provenance, architecture/profile, generation status or non-generation reason, and ABI verification status are machine-readable.
 
-次の指標を混同しない。
+Do not conflate these metrics:
 
-- source ingestion coverage: provider が認識した入力に対するインベントリ化率
-- projection accounting coverage: 現在の inventory 内で有効な status が付いた率
-- Go source generation coverage: Go source を出力した率
-- Pure Go callable coverage: Pure Go backend で実際に呼べる率
-- assembly callable coverage: 検証済み assembly trampoline で呼べる率
-- bridge callable coverage: C bridge で呼べる率
-- ABI verified coverage: ABI oracle または同等の検証を通った率
-- runtime smoke-tested coverage: Windows 上で非破壊 smoke test を実行した率
+- source ingestion coverage: rate of inventorying input recognized by the provider
+- projection accounting coverage: rate with a valid status within the current inventory
+- Go source generation coverage: rate for which Go source was emitted
+- Pure Go callable coverage: rate actually callable with the Pure Go backend
+- assembly callable coverage: rate callable with verified assembly trampolines
+- bridge callable coverage: rate callable through a C bridge
+- ABI verified coverage: rate that passed the ABI oracle or equivalent verification
+- runtime smoke-tested coverage: rate exercised by non-destructive smoke tests on Windows
 
-現在の fixture に対して `projection accounting coverage = 100%` となることはあり得るが、それは Windows SDK 全体の 100% ではない。現行の source-ingestion 指標も、すでに inventory に入ったレコードを分母としており、WinMD 内の全 table 行を分母にした完全性証明ではない。公式全 SDK の網羅を示すものとして「100%」を掲げてはならない。
+The fixture may have `projection accounting coverage = 100%`, but that is not 100% of the entire Windows SDK. The current source-ingestion metric also uses records already in the inventory as its denominator; it does not prove completeness against all table rows in WinMD. Do not advertise “100%” as coverage of the entire official SDK.
 
-## ステータス分類
+## Status classification
 
-すべての inventory symbol は status と非空の reason を持つ。`unclassified` は正規化時に無効であり、coverage gate でも失敗対象である。
+Every inventory symbol has a status and a nonempty reason. `unclassified` is invalid during normalization and fails the coverage gate.
 
-| Status | 意味 |
+| Status | Meaning |
 |---|---|
-| `generated-purego` | 対応 runtime で整数/ポインター ABI として呼出可能、または安全な Pure Go 投影 |
-| `generated-assembly` | architecture 別に検証済み assembly trampoline を使用 |
-| `generated-cgo-bridge` | 生成された C ABI bridge が必要 |
-| `generated-type-only` | 型・定数・descriptor のみ。呼出可能とは主張しない |
-| `generated-manual-override` | 根拠、SDK 範囲、テスト、削除条件を持つ override 適用済み |
-| `unsupported-go-abi` | Go 側の利用可能な backend では ABI を証明できない |
-| `unsupported-projection` | 入力は inventory 化したが、安全な言語投影が未実装 |
-| `kernel-mode-only` | 通常のユーザーモード Go process から呼べないカーネル API |
-| `missing-upstream-metadata` | 必要な公式 metadata が欠落 |
-| `external-sdk-not-installed` | optional な外部 SDK / local SDK が未導入 |
-| `undocumented-out-of-scope` | 未文書 API など、推測を避けるため対象外 |
-| `license-restricted` | 再配布または処理がライセンス上制限される |
-| `source-parse-error` | 入力破損または parser が安全に解釈できない |
+| `generated-purego` | Callable through the corresponding runtime as an integer/pointer ABI, or a safe Pure Go projection |
+| `generated-assembly` | Uses an architecture-specific verified assembly trampoline |
+| `generated-cgo-bridge` | Requires a generated C ABI bridge |
+| `generated-type-only` | Types, constants, or descriptors only; no claim of callability |
+| `generated-manual-override` | Override applied with evidence, SDK range, test, and removal condition |
+| `unsupported-go-abi` | No available Go-side backend can prove the ABI |
+| `unsupported-projection` | Input inventoried, but safe language projection is not implemented |
+| `kernel-mode-only` | Kernel API that cannot be called from an ordinary user-mode Go process |
+| `missing-upstream-metadata` | Required official metadata is missing |
+| `external-sdk-not-installed` | Optional external or local SDK is not installed |
+| `undocumented-out-of-scope` | Excluded to avoid guessing, such as undocumented APIs |
+| `license-restricted` | Redistribution or processing is restricted by license |
+| `source-parse-error` | Corrupt input or input that the parser cannot interpret safely |
 
-`unsupported-projection` は現行 IR が持つ追加の保守的状態であり、対応済みではない。`generated-*` であっても、backend と build tag を見ずに callability を推測してはならない。
+`unsupported-projection` is an additional conservative state in the current IR and does not indicate implementation. Even for `generated-*`, do not infer callability without checking the backend and build tags.
 
-## 対象 architecture と profile
+## Target architectures and profiles
 
-設定上の対象は `windows/386`、`windows/amd64`、`windows/arm64` である。profile は `windows-desktop`、`windows-appcontainer`、`windows-wdk` を区別する。現時点では fixture と一部の cross-compile/layout test がこの三 architecture を通す設計だが、ARM64 の実機実行や全 SDK の ABI 実行検証まで完了したことを意味しない。ARM64EC は通常の Go `arm64` と同一視せず、現在は対象外である。
+The configured targets are `windows/386`, `windows/amd64`, and `windows/arm64`. Profiles distinguish `windows-desktop`, `windows-appcontainer`, and `windows-wdk`. The fixture and some cross-compilation/layout tests are designed to cover these three architectures, but that does not mean runtime execution on ARM64 hardware or ABI execution verification for the entire SDK has been completed. ARM64EC is not treated as ordinary Go `arm64` and is currently out of scope.
 
-## 明示的な非保証
+## Explicit non-guarantees
 
-- undocumented NT API の signature を推測しない。
-- kernel-only symbol を通常の Go process から呼出可能として公開しない。
-- float、vector、varargs、aggregate-by-value、特殊 callback を一律の `uintptr` 列へ落とさない。
-- packed struct や Go で表現不能な alignment を、見た目だけ同じ通常 struct として出力しない。
-- `CGO_ENABLED=0` で bridge API が使えるように見せる stub を提供しない。
-- import しただけで DLL や全 API を eager load しない。
-- raw API が便利な Go `error`、string、slice、resource ownership を自動的に与えるとは限らない。
+- Do not guess signatures for undocumented NT APIs.
+- Do not expose kernel-only symbols as callable from ordinary Go processes.
+- Do not flatten float, vector, varargs, aggregate-by-value, or special callback ABIs into uniform `uintptr` sequences.
+- Do not emit packed structs or alignments that Go cannot express as ordinary structs that merely look the same.
+- Do not provide stubs that make bridge APIs appear usable with `CGO_ENABLED=0`.
+- Do not eagerly load DLLs or every API merely because a package is imported.
+- Raw APIs do not necessarily provide convenient Go `error`, strings, slices, or automatic resource ownership.
 
-## セキュリティ境界
+## Security boundaries
 
-system DLL は固定 metadata 由来の basename に限定し、`LOAD_LIBRARY_SEARCH_SYSTEM32` で lazy load する。外部入力を DLL 名や export 名として無検証で渡さない。NUL 終端 Win32 string は埋め込み NUL を拒否し、BSTR/HSTRING は長さ付きの意味を保持する。Go pointer の lifetime は `runtime.KeepAlive` と明示 ownership で管理し、native 側が call 後も保持する pointer や callback は、専用 allocation/registry/bridge が完成するまで安全と分類しない。
+System DLLs are limited to basenames from pinned metadata and lazily loaded with `LOAD_LIBRARY_SEARCH_SYSTEM32`. External input is not passed unchecked as a DLL or export name. NUL-terminated Win32 strings reject embedded NULs, while BSTR/HSTRING retain length-prefixed semantics. Go pointer lifetimes are managed with `runtime.KeepAlive` and explicit ownership. Pointers or callbacks retained by native code after a call are not classified as safe until dedicated allocation/registry/bridge support is complete.

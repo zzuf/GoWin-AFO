@@ -1,8 +1,8 @@
-# アーキテクチャ
+# Architecture
 
-## 全体像
+## Overview
 
-中心は「公式入力から直接 Go を出す」のではなく、入力ごとの差を provenance 付きの正規化 IR に集約し、同じ IR から出力、網羅性、検証を導く構成である。
+The design consolidates differences among inputs into a normalized IR with provenance, then derives output, coverage, and verification from that IR rather than generating Go directly from official inputs.
 
 ```text
 sources.lock.json
@@ -28,25 +28,25 @@ winapisource -> sources/cache/<source-id> -> provider raw dump
           runtime/winabi, runtime/com, runtime/winrt
 ```
 
-fixture は全 feature を通る小規模縦切りであり、`winapigen generate --fixture` で明示的に選ぶ。加えて公式 Win32/WDK WinMD の full-source pass は、P/Invoke のうち固定整数だけで型解決できる保守的 subset を Pure Go raw wrapper まで流す。custom attribute が未投影の現段階では、pointer、wide scalar、特殊 ABI、WinRT/COM method を公式 callable subset へ入れない。型 layout 等が未解決の symbol は emitter へ流さず、inventory/status/reason だけを公開する。CLI は scope 未指定を拒否し、full tree を暗黙の fixture generation で置換しない。
+The fixture is a small vertical slice exercising every feature, selected explicitly with `winapigen generate --fixture`. The full-source pass over official Win32/WDK WinMD also carries a conservative subset of P/Invoke functions whose types can be resolved using only fixed-width integers through to Pure Go raw wrappers. At this stage, custom attributes have not been projected, so pointers, wide scalars, special ABIs, and WinRT/COM methods are not included in the official callable subset. Symbols with unresolved type layouts or other unresolved details do not reach the emitter; only their inventory, status, and reason are published. The CLI rejects an unspecified scope and does not implicitly replace the full tree with fixture generation.
 
-## レイヤー
+## Layers
 
 ### Source manager
 
-`generator/internal/source` は lock file を読み、固定 URL または Windows SDK install から artifact を staging directory へ取得する。artifact 全体の SHA-256 を確認した後、lock に列挙されたファイルだけを抽出し、`sources/cache/<source-id>` へ置換する。検証時には実際に読む展開済みファイルを hash 済み archive entry と再比較する。現行 `generate --all` の4 sourceはすべて required で、欠落・改変・hash mismatchは失敗する。
+`generator/internal/source` reads the lock file and obtains artifacts from fixed URLs or a Windows SDK installation into a staging directory. After verifying the SHA-256 of the entire artifact, it extracts only files listed in the lock and replaces `sources/cache/<source-id>`. During verification, it compares the extracted files actually read against the hashed archive entries again. All four sources in the current `generate --all` are required; missing or modified sources and hash mismatches cause failure.
 
 ### Provider
 
-`generator/internal/metadata.Provider` が source type ごとの入口である。Win32、WDK、WinRT は `microsoft/go-winmd` を使う WinMD provider、header は Clang AST JSON provider、type library は JSON interchange provider を持つ。Windows App SDK と外部 SDK は interface と source lock 上の境界があるが、推移 NuGet の API payload を展開する provider は未完成である。
+`generator/internal/metadata.Provider` is the entry point for each source type. Win32, WDK, and WinRT have WinMD providers using `microsoft/go-winmd`; headers have a Clang AST JSON provider; and type libraries have a JSON interchange provider. Windows App SDK and external SDKs have boundaries defined by interfaces and the source lock, but the provider that expands API payloads from transitive NuGet packages is incomplete.
 
-provider は `Source`、`Symbol`、raw 表現、diagnostic を返す。parser failure を黙殺せず、可能な範囲で `source-parse-error` または diagnostic に残す。
+Providers return `Source`, `Symbol`, a raw representation, and diagnostics. Parser failures are not silently ignored; where possible, they remain as `source-parse-error` or diagnostics.
 
-### 正規化 IR
+### Normalized IR
 
-`generator/internal/model` の `Inventory` が中心データである。各 `Symbol` は source、namespace、kind、native name、architecture、ABI profile、canonical signature、generic arity、status/backend と理由、provenance を持つ。
+The `Inventory` in `generator/internal/model` is the central data structure. Each `Symbol` has a source, namespace, kind, native name, architecture, ABI profile, canonical signature, generic arity, status/backend and reason, and provenance.
 
-安定 ID は次の順序の文字列を NUL で区切り、SHA-256 にしたものである。
+A stable ID is the SHA-256 of the following strings in order, separated by NUL bytes:
 
 ```text
 source ID
@@ -59,46 +59,46 @@ generic arity
 ABI profile
 ```
 
-正規化は whitespace を整え、ID collision を拒否し、source、symbol、diagnostic、provenance を安定順序へ並べる。最後に timestamp や absolute path を含まない inventory JSON の SHA-256 を manifest hash とする。
+Normalization regularizes whitespace, rejects ID collisions, and sorts sources, symbols, diagnostics, and provenance into stable order. Finally, the SHA-256 of the inventory JSON, which contains neither timestamps nor absolute paths, becomes the manifest hash.
 
 ### Override
 
-override は IR へ任意コードを注入する仕組みではない。対象 symbol ID と source ID を指定し、現在値に一致すべき `before` と、変更する `after` を JSON object で記録する。SDK version 範囲、理由、header/ABI probe/upstream issue の根拠、回帰テスト、上流修正後の削除条件が必須である。`before` が一致しない stale override は生成を止める。
+Overrides do not inject arbitrary code into the IR. An override identifies a target symbol ID and source ID and records the expected current value in `before` and the change in `after` as JSON objects. The SDK version range, reason, evidence from a header/ABI probe/upstream issue, regression test, and removal condition after an upstream fix are required. A stale override whose `before` does not match stops generation.
 
-### Projection と emitter
+### Projection and emitter
 
-projection は function signature を capability matrix に分類する。型 emitter は通常型、architecture 別型、union storage/accessor、bit-field getter/setter、flexible-array header/view、callback address、COM vtable を分割して出力する。公式 function emitter は現在、pointer、wide scalar by-value、未解決 named type を含まない固定整数 raw P/Invoke だけを対象とする。availability attribute の完全投影前なので、公式 wrapper は optional export として lazy resolve/availability check を生成する。
+Projection classifies function signatures using a capability matrix. The type emitter separately outputs ordinary types, architecture-specific types, union storage/accessors, bit-field getters/setters, flexible-array headers/views, callback addresses, and COM vtables. The official function emitter currently handles only fixed-width integer raw P/Invoke functions without pointers, wide scalars passed by value, or unresolved named types. Because availability attributes have not yet been fully projected, official wrappers generate lazy resolution and availability checks for optional exports.
 
-namespace は個別 package に分け、1 package の import で全 Windows API がコンパイルされる構造を避ける。汎用 emitter の現在の出力先は `bindings/generated/<正規化namespace>`、bridge は `bridge/generated` である。`bindings/win32`、`bindings/wdk`、`bindings/winrt` の13ファイルは runtime smoke/layout test 用のレビュー済み参照 slice で、`generator/internal/slice/templates` から専用 stage で再構築し manifest で hash 検証する。source pin 変更時はレビューを要求し、import は root go.mod 由来である。汎用 emitter の生成済み全 SDK surface とは数えない。
+Namespaces are split into separate packages so importing one package does not compile every Windows API. The general emitter currently writes to `bindings/generated/<normalized-namespace>`, and the bridge writes to `bridge/generated`. The 13 files in `bindings/win32`, `bindings/wdk`, and `bindings/winrt` are reviewed reference slices for runtime smoke/layout tests. A dedicated stage rebuilds them from `generator/internal/slice/templates` and verifies their hashes against a manifest. Changes to source pins require review, and imports derive from the root go.mod. They are not counted as the full SDK surface generated by the general emitter.
 
 ### ABI runtime
 
-`runtime/winabi` は DLL 解決、整数/ポインター call、last error、HRESULT/NTSTATUS、GUID、pointer width、UTF-16 境界を隔離する。`runtime/com` と `runtime/winrt` はこの層の上で native ownership と apartment/thread affinity を明示する。raw generated package は native return と pointer を保ち、ergonomic helper は runtime 側へ分離する。
+`runtime/winabi` isolates DLL resolution, integer/pointer calls, last error, HRESULT/NTSTATUS, GUID, pointer width, and UTF-16 boundaries. Above it, `runtime/com` and `runtime/winrt` make native ownership and apartment/thread affinity explicit. Raw generated packages preserve native returns and pointers; ergonomic helpers are separated into the runtime.
 
-## 決定性と更新の原子性
+## Determinism and atomic updates
 
-- map iteration に依存せず、source、symbol、file、import を明示的に sort する。
-- generated header は generator version、source ID/version、manifest hash を持ち、日時とローカル絶対 path を持たない。
-- Go source は出力前に `go/format` を通す。
-- `bindings/generated`、`bridge/generated`、reviewed slice、inventory/coverage、要求された raw dump を workspace 内の staging tree で全て完成させる。
-- 所有 marker `.winapigen.json` がない tree、marker にない追加 file、symlink、generated header のない手書き file は置換しない。
-- 全出力先を preflight してから順次 rename し、通常 error は既存出力を戻す。rollback 失敗時は backup を削除せず場所を報告する。
-- inventory と coverage report は stage 内で同期する。複数 rename の間の process crash に対する永続 journal は未実装であり、一つの OS atomic operation と同等とは主張しない。
+- Sort sources, symbols, files, and imports explicitly instead of depending on map iteration.
+- Generated headers contain the generator version, source ID/version, and manifest hash, but no date or local absolute path.
+- Pass Go source through `go/format` before output.
+- Complete `bindings/generated`, `bridge/generated`, reviewed slices, inventory/coverage, and requested raw dumps in a staging tree within the workspace.
+- Do not replace a tree without the ownership marker `.winapigen.json`, with extra files absent from the marker, with symlinks, or with handwritten files lacking generated headers.
+- Preflight every output destination before renaming them in sequence; on ordinary errors, restore the previous output. If rollback fails, retain the backup and report its location.
+- Keep inventory and coverage reports synchronized within the stage. A durable journal for process crashes between multiple renames is not implemented, so the update is not claimed to be equivalent to a single atomic OS operation.
 
-## エラーとカバレッジの設計
+## Error and coverage design
 
-`unclassified` は IR validation で受理されない。非生成 symbol にも status と reason が必要である。coverage は ingestion、accounting、source generation、backend callability、ABI verification、runtime execution を別々に数える。CI の最重要条件は projection accounting 100%、unclassified 0、ABI mismatch 0、generation drift 0 であり、各分母が何かを併記する。
+IR validation rejects `unclassified`. Symbols that are not generated also need a status and reason. Coverage counts ingestion, accounting, source generation, backend callability, ABI verification, and runtime execution separately. The most important CI conditions are 100% projection accounting, 0 unclassified symbols, 0 ABI mismatches, and 0 generation drift, with the denominator stated for each metric.
 
-ただし、現在の full-source inventory は WinMD の全 table/custom attribute を網羅していない。このため現段階の accounting 100% は「現在 inventory 化できた集合」についての性質であり、SDK 全シンボル完全性の証明ではない。
+However, the current full-source inventory does not cover every WinMD table or custom attribute. Thus, accounting at 100% currently describes only the set that has been inventoried; it does not prove completeness across all SDK symbols.
 
-## Trust boundary と安全策
+## Trust boundaries and safeguards
 
-入力 artifact は hash 検証前に信頼しない。download は HTTPS、size 上限は 1 GiB、zip entry は lock に列挙されたものだけとし、absolute path と `..` を拒否する。生成 path も staging root 外への escape を拒否する。
+Input artifacts are not trusted before hash verification. Downloads use HTTPS and have a 1 GiB size limit. Only ZIP entries listed in the lock are extracted, and absolute paths and `..` are rejected. Generated paths are also prevented from escaping the staging root.
 
-runtime では system DLL basename と ASCII export name を検証する。current directory や一般の `PATH` を検索せず、System32 loader を使う。app-local DLL の trusted absolute path policy は未実装なので、現時点で外部入力による app-local load は提供しない。
+At runtime, system DLL basenames and ASCII export names are validated. The loader uses System32 and does not search the current directory or general `PATH`. A trusted absolute path policy for app-local DLLs is not implemented, so loading app-local DLLs from external input is currently unavailable.
 
-`unsafe` は ABI runtime、generated raw layer、検証へ閉じ込める。pointer、callback、COM reference、HSTRING/BSTR/CoTaskMem は lifetime を隠さず、finalizer を唯一の解放手段にしない。
+`unsafe` is confined to the ABI runtime, generated raw layer, and verification. Pointer, callback, COM reference, HSTRING/BSTR/CoTaskMem lifetimes are not hidden, and finalizers are not the sole means of release.
 
-## 依存方向
+## Dependency direction
 
-依存は原則として `bindings -> runtime/winabi`、`runtime/com -> runtime/winabi`、`runtime/winrt -> runtime/com + runtime/winabi` の一方向である。foundation 型を共有 package に置き、namespace 間で同じ基礎型を再定義しない。generator は generated bindings を import せず、IR から出力する。この分離により、generator は Linux/macOS でも build/test でき、Windows ABI 呼出だけが build tag で Windows に限定される。
+Dependencies generally flow in one direction: `bindings -> runtime/winabi`, `runtime/com -> runtime/winabi`, and `runtime/winrt -> runtime/com + runtime/winabi`. Foundation types live in a shared package rather than being redefined across namespaces. The generator emits from the IR and does not import generated bindings. This separation lets the generator build and run tests on Linux/macOS, while build tags restrict Windows ABI calls to Windows.

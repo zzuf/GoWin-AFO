@@ -1,21 +1,21 @@
-# 検証
+# Verification
 
-## 証拠の層
+## Layers of evidence
 
-検証結果は次の順に強くなるが、上位が下位を暗黙に置き換えるわけではない。
+Verification results become stronger in the following order, but a higher layer does not implicitly replace a lower one.
 
-1. parser/normalizer unit test
-2. generator golden test と二回生成の同一性
-3. Go source の 386/amd64/arm64 cross-compile
-4. C/C++ header に対する compile-time ABI assertion
-5. C/C++ probe 実行結果と Go layout/value の比較
-6. Windows 上の非破壊 runtime smoke test
+1. Parser/normalizer unit tests
+2. Generator golden tests and identical results from two generation runs
+3. Cross-compilation of Go source for 386/amd64/arm64
+4. Compile-time ABI assertions against C/C++ headers
+5. Comparison of executed C/C++ probe results with Go layouts/values
+6. Non-destructive runtime smoke tests on Windows
 
-Go code がコンパイルできるだけでは Windows ABI compatible としない。特に aggregate-by-value、float/vector、calling convention、packed layout、bit field、callback、COM vtable は native compiler の証拠を要求する。
+Go code compiling alone is not evidence of Windows ABI compatibility. Aggregate-by-value, float/vector, calling conventions, packed layouts, bit fields, callbacks, and COM vtables in particular require evidence from a native compiler.
 
-## Go test
+## Go tests
 
-通常の確認は次である。
+Normal checks are:
 
 ```text
 go test ./...
@@ -23,13 +23,13 @@ go vet ./...
 gofmt -l .
 ```
 
-CI は Linux、macOS、Windows で generator と oracle を build/test し、`CGO_ENABLED=0` で `windows/386`、`windows/amd64`、`windows/arm64` の全 package と test binary を cross-compile する。Windows x86/x64 runner では raw Kernel32、COM、WinRT の非破壊 smoke test を実行する。
+CI builds/tests the generator and oracle on Linux, macOS, and Windows, and cross-compiles all packages and test binaries for `windows/386`, `windows/amd64`, and `windows/arm64` with `CGO_ENABLED=0`. Windows x86/x64 runners execute non-destructive smoke tests for raw Kernel32, COM, and WinRT.
 
-ECMA-335 parser は compressed integer と signature parser の fuzz target を持つ。通常 CI は各 target を短時間実行する smoke であり、長時間 corpus fuzzing の代用ではない。
+The ECMA-335 parser has fuzz targets for compressed integers and the signature parser. Normal CI runs each target briefly as a smoke test; this does not replace long-running corpus fuzzing.
 
 ## ABI oracle
 
-`tools/abi-oracle` は review 済み JSON manifest から決定的な C++17 probe を生成する。
+`tools/abi-oracle` generates deterministic C++17 probes from a reviewed JSON manifest.
 
 ```text
 go run ./tools/abi-oracle validate --manifest tools/abi-oracle/testdata/probe-manifest.json
@@ -39,45 +39,45 @@ go run ./tools/abi-oracle compare --expected tools/abi-oracle/testdata/windows-s
 go run ./cmd/winapiverify abi --all
 ```
 
-manifest/result の JSON Schema は `tools/abi-oracle/schema` にある。manifest の probe ID は安定かつ一意でなければならない。include path、define、SDK version、profile、target architecture、native expression を review する。native expression は C++ code なので、外部入力をそのまま manifest に入れない。
+JSON Schemas for the manifest/result are in `tools/abi-oracle/schema`. Probe IDs in the manifest must be stable and unique. Review include paths, defines, SDK version, profile, target architecture, and native expressions. Native expressions are C++ code, so do not insert external input directly into the manifest.
 
-生成された probe は次を出力する。
+Generated probes output:
 
-- `sizeof`、`alignof`、`offsetof`
-- struct/union の kind、size、alignment
-- enum/macro/constant value
-- GUID/IID/CLSID の canonical value
-- bit-field の memory-order mask、bit offset、bit width
-- function pointer の `std::is_same` compile-time assertion と calling convention label
-- C-style COM vtable の method index
-- target/preprocessor condition
+- `sizeof`, `alignof`, and `offsetof`
+- Struct/union kind, size, and alignment
+- Enum/macro/constant values
+- Canonical GUID/IID/CLSID values
+- Bit-field memory-order masks, bit offsets, and bit widths
+- `std::is_same` compile-time assertions for function pointers and calling convention labels
+- Method indexes of C-style COM vtables
+- Target/preprocessor conditions
 
-wide integer は JSON number の精度問題を避けるため decimal string とする。probe header は SDK version と canonical manifest SHA-256 を持つが、生成日時や absolute path を持たない。結果は compiler identity を provenance として保存する。比較時は MSVC と clang-cl の同じ ABI facts を比較できるよう compiler identity だけを除外し、SDK/profile/architecture/hash と全 probe value は比較する。
+Wide integers are decimal strings to avoid JSON number precision problems. Probe headers contain the SDK version and canonical manifest SHA-256, but no generation date or absolute path. Results retain compiler identity as provenance. Comparison excludes only compiler identity so the same ABI facts from MSVC and clang-cl can be compared; SDK/profile/architecture/hash and every probe value are compared.
 
-## 現在の fixture evidence
+## Current fixture evidence
 
-Windows SDK `10.0.26100.0` の fixture は MSVC 19.44 で x86/x64 probe を実行して作成した checked-in JSON を持つ。対象は 5 records/unions、2 constants、`IID_IUnknown`、1 bit field、2 function pointer types、IUnknown の 3 vtable slots、2 conditions である。これは小規模縦切りの証拠であって、SDK 全体の ABI verification ではない。
+The Windows SDK `10.0.26100.0` fixture has checked-in JSON produced by executing x86/x64 probes with MSVC 19.44. It covers 5 records/unions, 2 constants, `IID_IUnknown`, 1 bit field, 2 function pointer types, 3 IUnknown vtable slots, and 2 conditions. This is evidence for a small vertical slice, not ABI verification of the entire SDK.
 
-ARM64 probe は target compiler で cross-compile し、target guard と function type assertion を確認する。x64 runner では実行しないため ARM64 result JSON や runtime verified 数を捏造しない。ARM64 hardware runner を追加したときだけ同 target の実行 baseline を作る。ARM64EC は独立 target status であり、Go `arm64` と同一視しない。
+The ARM64 probe is cross-compiled with a target compiler to check the target guard and function type assertions. It is not executed on x64 runners, so no ARM64 result JSON or runtime-verified count is fabricated. An execution baseline for that target will be created only when an ARM64 hardware runner is added. ARM64EC has a distinct target status and is not equated with Go `arm64`.
 
-## Go layout との比較
+## Comparison with Go layouts
 
-oracle result を「ABI verified」と inventory に反映するには、probe ID を IR symbol ID/field ID に対応付け、architecture/profile/sdkVersion/manifest hash が一致することを確認する。Go test は `unsafe.Sizeof`、`unsafe.Alignof`、`unsafe.Offsetof`、generated accessor の bit mask、GUID、constant、vtable index を JSON と比較する。
+To reflect an oracle result as “ABI verified” in the inventory, map its probe ID to an IR symbol ID/field ID and confirm that architecture/profile/sdkVersion/manifest hash match. Go tests compare `unsafe.Sizeof`, `unsafe.Alignof`, `unsafe.Offsetof`, bit masks from generated accessors, GUIDs, constants, and vtable indexes against the JSON.
 
-oracle comparator は実行した C++ result と checked-in baseline の機械可読差分を作る。`winapiverify` はさらに、source lock、生成 slice manifest と artifact hash、probe provenance を検証し、record layout、function type 等で対応可能な fact を normalized IR symbol へ照合して `coverage/abi-latest.json` を出力する。対応する IR layout/symbol がない probe fact は `unmatchedFacts` に残し、全 generated Go symbol を検証済みにしない。ARM64 は compile-only、ARM64EC は unsupported と明示する。
+The oracle comparator produces a machine-readable diff between executed C++ results and the checked-in baseline. `winapiverify` also checks the source lock, generated slice manifest and artifact hashes, and probe provenance; matches compatible facts such as record layouts and function types to normalized IR symbols; and writes `coverage/abi-latest.json`. Probe facts with no corresponding IR layout/symbol remain in `unmatchedFacts`, and not all generated Go symbols are marked verified. ARM64 is explicitly compile-only, and ARM64EC is unsupported.
 
-`winapiverify abi --all` の `--all` は vertical-slice fixture に checked-in された全 ABI evidence target を意味する。Windows SDK 全 namespace や全 inventory symbol の検証ではない。また照合対象は normalized IR の期待値であり、生成 Go struct を `unsafe.Sizeof/Offsetof` で全件実測したことや、全 native call boundary を実行したことを意味しない。これらは別の Go layout test/runtime smoke evidence として追加する必要がある。
+The `--all` in `winapiverify abi --all` means all ABI evidence targets checked in for the vertical-slice fixture. It does not mean verification of every Windows SDK namespace or inventory symbol. The matching target is expected values in the normalized IR; it does not mean that every generated Go struct has been measured with `unsafe.Sizeof/Offsetof` or that every native call boundary has been executed. Those require separate Go layout tests and runtime smoke evidence.
 
-## Runtime smoke
+## Runtime smoke tests
 
-通常 CI で実行するのは process/thread ID、performance counter、system time、VirtualAlloc/VirtualFree、optional export availability、BSTR/HSTRING round trip、CoTaskMem、COM/WinRT apartment、既知 WinRT activation factory など非破壊操作だけである。
+Normal CI exercises only non-destructive operations such as process/thread IDs, performance counters, system time, VirtualAlloc/VirtualFree, optional export availability, BSTR/HSTRING round trips, CoTaskMem, COM/WinRT apartments, and known WinRT activation factories.
 
-管理者権限、driver install、service 作成、registry 書込み、system setting 変更は通常 CI で行わない。registry を追加する場合は read-only operation と既知 key に限定する。optional API は availability check 後だけ呼ぶ。
+Normal CI does not perform administrator operations, driver installation, service creation, registry writes, or system setting changes. Any registry additions are limited to read-only operations and known keys. Optional APIs are called only after an availability check.
 
-## Failure の扱い
+## Handling failures
 
-CI は `tools/ci/setup-msvc.cmd` で Visual Studio Installer の `vswhere` を使い、C++ tools のある instance を検出する。Visual Studio の year/edition を固定パスに埋め込まない。`vcvarsall` の exit code だけでなく、選ばれた SDK version と header の存在も確認する。`tools/ci/setup-msvc.Tests.ps1` は x86/x64 と missing SDK/locator の失敗経路を検証する。
+CI uses `vswhere` from Visual Studio Installer through `tools/ci/setup-msvc.cmd` to find an instance with C++ tools. It does not embed a fixed Visual Studio year/edition path. It checks the selected SDK version and header presence as well as the `vcvarsall` exit code. `tools/ci/setup-msvc.Tests.ps1` tests x86/x64 and failure paths for a missing SDK/locator.
 
-ABI mismatch は expected/actual/path を持つ JSON diff と、生成 probe/compiler output を artifact として保存する。SDK 更新で layout、GUID、signature、DLL mapping が変わった場合、expected JSON を先に書き換えて gate を回避せず、公式 header/metadata の差分、影響する Go symbol、override の要否を確認する。
+For ABI mismatches, CI saves a JSON diff with expected/actual/path and the generated probe/compiler output as artifacts. If an SDK update changes layouts, GUIDs, signatures, or DLL mappings, do not rewrite expected JSON first to bypass the gate; inspect the official header/metadata diff, affected Go symbols, and whether an override is needed.
 
-cross-compile だけ成功、runtime runner 不在、optional SDK 不在は別々に記録する。検証できなかったものを成功扱いにせず、`ABIUnverified`、`external-sdk-not-installed`、または適切な非 callable status のまま残す。
+A successful cross-compile, an absent runtime runner, and an absent optional SDK are recorded separately. Unverified items are not treated as successes; they remain `ABIUnverified`, `external-sdk-not-installed`, or an appropriate non-callable status.

@@ -1,64 +1,64 @@
-# SDK 更新
+# SDK Updates
 
-## 原則
+## Principles
 
-source version と SHA-256 は `sources.lock.json` だけで変更する。floating `latest`、取得日時、開発機固有 path を正本にしない。SDK/WDK/WinRT/Windows App SDK の更新は自動で main へ merge せず、生成、coverage、ABI、license、breaking change を pull request で review する。
+Change source versions and SHA-256 values only in `sources.lock.json`. Do not treat a floating `latest`, retrieval date, or developer-machine-specific path as authoritative. Do not automatically merge SDK/WDK/WinRT/Windows App SDK updates into main; review generation, coverage, ABI, license, and breaking changes in a pull request.
 
-## 更新候補の確認
+## Checking for Update Candidates
 
 ```text
 go run ./cmd/winapisource update --dry-run
 ```
 
-この command は候補を報告するだけで lock を変更しない。NuGet meta package の推移依存を更新する場合は、実際に API payload を持つ全 package を個別 source ID/version/hash として固定する。Windows SDK local provider は runner に対象 version が導入済みかも確認する。
+This command only reports candidates; it does not change the lock file. When updating transitive dependencies of a NuGet meta-package, pin every package that actually contains an API payload with its own source ID, version, and hash. For the local Windows SDK provider, also confirm that the target version is installed on the runner.
 
-NuGet の配列順には依存せず、数値、4桁目の revision、prerelease label を比較する。stable pin には stable 版だけを提案し、prerelease pin は stable/prerelease の両方を候補にする。現在より古い版は提案せず、空・不正・4 MiB 超の応答は失敗させる。NuGet content index には unlisted 版も含まれるため、候補発見はサポート状態や採用可否の承認を意味しない。[NuGet versioning](https://learn.microsoft.com/en-us/nuget/concepts/package-versioning)、[content index](https://learn.microsoft.com/en-us/nuget/api/package-base-address-resource) を参照。
+Compare numeric components, the fourth revision component, and prerelease labels without relying on NuGet array order. Suggest only stable versions for a stable pin, and both stable and prerelease versions for a prerelease pin. Do not suggest versions older than the current one, and fail on empty, invalid, or larger-than-4-MiB responses. Because the NuGet content index also includes unlisted versions, finding a candidate does not imply approval of its support status or suitability for adoption. See [NuGet versioning](https://learn.microsoft.com/en-us/nuget/concepts/package-versioning) and the [content index](https://learn.microsoft.com/en-us/nuget/api/package-base-address-resource).
 
-`.github/workflows/sdk-update.yml` は週次または手動で candidate discovery JSON を作るが、候補 lock を自動適用しない。その後の生成 patch、coverage delta、binding/runtime の file-level change、release-note draft は **現在の pin の再現性**についての artifact である。候補 version の hash を固定して生成・ABI 差分を作る段階と、symbol-level compatibility 判定は未実装である（`SDKUP-001`）。候補を採用する pull request では、以下の手動手順を実行する。
+`.github/workflows/sdk-update.yml` produces candidate discovery JSON weekly or on demand, but does not automatically apply a candidate lock file. The subsequent generated patch, coverage delta, binding/runtime file-level changes, and release-note draft are artifacts about **reproducibility of the current pin**. The stage that pins a candidate version's hash and produces generation and ABI diffs, along with symbol-level compatibility assessment, is not implemented (`SDKUP-001`). Run the following manual procedure in a pull request that adopts a candidate.
 
-## 手動更新手順
+## Manual Update Procedure
 
-1. 公式 package feed / SDK installer で version と公開 license を確認する。
-2. artifact 全体を取得し SHA-256 を計算する。hash を推測・コピーしない。
-3. source ID、type、package、version、retrieval、SHA-256、license identifier、architectures、SDK version、file list、dependency を lock へ反映する。
-4. redistribution が許可されない SDK/header/NuGet payload を Git に追加しない。cache は ignore 対象のままにする。
-5. `fetch` と `verify` を clean environment で実行する。
-6. `generate --all` を実行し、inventory、generated Go/C、coverage を review する。
-7. `winapicoverage diff` と regression gate を実行する。new symbol に `unclassified` や空 reason がないことを確認する。
-8. x86/x64 の ABI probe を実行し、ARM64 を cross-compile する。ARM64 hardware がある場合だけ runtime result も更新する。
-9. generated package を 386/amd64/arm64、cgo off/on の該当構成で compile する。
-10. 非破壊 smoke test を Windows で実行する。
-11. 同じ入力で二回生成し、二回目が clean であることを確認する。
-12. source、coverage、ABI、breaking changes、known limitation、license/NOTICE、release note を一つの review にまとめる。
+1. Confirm the version and published license in the official package feed / SDK installer.
+2. Retrieve the entire artifact and calculate its SHA-256. Do not guess or copy a hash.
+3. Record the source ID, type, package, version, retrieval information, SHA-256, license identifier, architectures, SDK version, file list, and dependencies in the lock file.
+4. Do not add SDK/header/NuGet payloads to Git if redistribution is not permitted. Keep the cache ignored.
+5. Run `fetch` and `verify` in a clean environment.
+6. Run `generate --all` and review the inventory, generated Go/C, and coverage.
+7. Run `winapicoverage diff` and the regression gate. Confirm that no new symbol has `unclassified` status or an empty reason.
+8. Run the x86/x64 ABI probes and cross-compile for ARM64. Update runtime results only if ARM64 hardware is available.
+9. Compile generated packages for the applicable 386/amd64/arm64 configurations with cgo off/on.
+10. Run nondestructive smoke tests on Windows.
+11. Generate twice from the same inputs and confirm that the second run leaves a clean diff.
+12. Combine source, coverage, ABI, breaking changes, known limitations, license/NOTICE, and release notes in one review.
 
-## Coverage regression
+## Coverage Regression
 
-new API が増えると、正しく分類していても ABI verified percentage が下がる場合がある。baseline を機械的に下げず、未検証 symbol を kind/source/architecture/backend ごとに示し、probe 追加または明示的な未検証理由を決める。
+When new APIs are added, the ABI-verified percentage can fall even if they are classified correctly. Do not mechanically lower the baseline. Show unverified symbols by kind/source/architecture/backend, then decide whether to add probes or document explicit reasons for their unverified status.
 
-projection accounting は常に 100% を保つ。parser が新 table/signature を解釈できない場合も黙って捨てず、`source-parse-error` または `unsupported-projection` と diagnostic を残す。source ingestion の分母自体が変わった場合は、provider が認識する table/attribute の差も説明する。
+Keep projection accounting at 100% at all times. Even if the parser cannot interpret a new table or signature, do not silently discard it; record `source-parse-error` or `unsupported-projection` with a diagnostic. If the source-ingestion denominator itself changes, also explain the differences in tables/attributes recognized by the provider.
 
-## ABI baseline 更新
+## Updating the ABI Baseline
 
-ABI result は同じ manifest と target の native compiler 実測から作る。手入力で size/offset/GUID を合わせない。差分が公式 SDK の意図した変更なら、対象 source version と architecture を変えた新 baseline として追加し、古い SDK baseline を上書きしない。
+Create ABI results from native compiler measurements for the same manifest and target. Do not manually adjust sizes, offsets, or GUIDs to match. If a difference is an intended official SDK change, add a new baseline for the affected source version and architecture; do not overwrite the old SDK baseline.
 
-function pointer assertion が失敗した場合は generated signature を callable に保ったまま expected type を緩めない。metadata、header、calling convention、target macro を調べ、projection/override/backend classification を修正する。
+If a function-pointer assertion fails, do not relax the expected type while leaving the generated signature callable. Investigate the metadata, header, calling convention, and target macros, then correct the projection, override, or backend classification.
 
-## Override の更新
+## Updating Overrides
 
-SDK 更新で override の `before` が一致しなくなった場合、生成を止めるのが正しい。上流修正済みなら removal condition と evidence を確認して override と regression test を削除する。未修正なら version range と `before/after` を新 SDK に合わせ、header または ABI probe の根拠を追加する。根拠不明・無期限の override は追加しない。
+If an SDK update causes an override's `before` value to stop matching, generation should stop. If upstream has fixed the issue, check the removal condition and evidence, then remove the override and regression test. If it remains unfixed, adapt the version range and `before/after` values to the new SDK, and add supporting header or ABI-probe evidence. Do not add overrides without evidence or an end condition.
 
-## Release note
+## Release Notes
 
-最低限、次を記載する。
+Include at least the following:
 
-- old/new source ID、version、SHA-256、SDK contract
-- inventory symbol 数と source/kind/architecture ごとの差
-- Pure Go/assembly/bridge/type-only/unsupported の増減
-- ABI verified/unverified/mismatch と runtime execution の増減
-- public Go API の追加・削除・rename・signature change
-- required OS version、DLL、availability の変更
-- manual override の追加/削除
-- license/NOTICE の変更
-- ARM64 等で compile-only の検証範囲
+- old/new source IDs, versions, SHA-256 values, and SDK contracts
+- inventory symbol count and differences by source/kind/architecture
+- changes in Pure Go/assembly/bridge/type-only/unsupported counts
+- changes in ABI verified/unverified/mismatch and runtime execution counts
+- additions, removals, renames, and signature changes in the public Go API
+- changes to required OS versions, DLLs, and availability
+- additions/removals of manual overrides
+- license/NOTICE changes
+- scope of compile-only verification on ARM64 and similar targets
 
-assessment workflow は release note を公開せず artifact に留める。review と明示的な release 操作を経るまで package/release を作成しない。
+The assessment workflow does not publish release notes; it retains them as an artifact. Do not create a package/release until review and an explicit release operation have taken place.

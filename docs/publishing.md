@@ -1,15 +1,15 @@
-# GoWin-AFO の GitHub 公開
+# Publishing GoWin-AFO on GitHub
 
-公開先は所有者が指定した `git@github.com:zzuf/GoWin-AFO.git`。最初の整備時点には remote がなかったため仮 module path を使用したが、現在は `github.com/zzuf/GoWin-AFO` へ移行している。ソースを push することと、全 API の完成版を release することは別である。
+The publication target specified by the owner is `git@github.com:zzuf/GoWin-AFO.git`. The initial setup used a temporary module path because no remote was configured, but the project has since migrated to `github.com/zzuf/GoWin-AFO`. Pushing the source is not the same as releasing a complete implementation of all APIs.
 
-## 公開対象
+## Publication contents
 
-- generator/runtime/test/生成バインディング、固定 source lock、coverage、ABI evidence、LICENSE/NOTICE を含める。
-- `sources/cache`、`.cache`、SDK/WDK/WinMD/NuGet 入力、probe executable、認証情報は含めない。
-- `coverage/inventory.json.gz` は公式入力から作った大規模な IR。API documentation や SDK payload の代替ではない。Git 履歴の肥大化を避けるため、更新時に理由のない全量差分を作らない。
-- `.gitattributes` が generated text の LF と gzip binary 扱いを固定する。
+- Include the generator/runtime/tests/generated bindings, pinned source lock, coverage, ABI evidence, and LICENSE/NOTICE.
+- Exclude `sources/cache`, `.cache`, SDK/WDK/WinMD/NuGet inputs, probe executables, and credentials.
+- `coverage/inventory.json.gz` is a large IR derived from official inputs. It is not a substitute for API documentation or SDK payloads. Avoid unjustified full-file changes during updates to limit Git history growth.
+- `.gitattributes` enforces LF for generated text and binary handling for gzip files.
 
-## Push 前の確認
+## Pre-push checks
 
 ```text
 go mod verify
@@ -23,24 +23,24 @@ git diff --exit-code
 git status --short
 ```
 
-同じ生成・ABI検証をもう一度実行して差分がないことを確認する。GitHub Actions の初回実行結果も確認する。ローカル cross-compile を macOS/Linux の実行検証と混同しない。
+Repeat the same generation and ABI verification to confirm there is no diff. Check the first GitHub Actions run as well. Do not confuse local cross-compilation with execution testing on macOS/Linux.
 
-## Remote と module path
+## Remote and module path
 
-`origin` には下記 URL を使う。既存 repository なら、まず `git ls-remote <URL>` で履歴の有無を確認する。既存履歴を force-push で上書きしない。
+Use the following URL for `origin`. For an existing repository, first check for history with `git ls-remote <URL>`. Do not overwrite existing history with a force push.
 
 ```text
 git remote add origin git@github.com:zzuf/GoWin-AFO.git
 git push -u origin main
 ```
 
-プロジェクト名は `GoWin-AFO` とし、`project.yaml` に記録する。module path は `go.mod` の `github.com/zzuf/GoWin-AFO` が正本である。将来 repository を移転する場合も、手書き source の import と docs を同時に移行し、生成ファイルは直接置換せず emitter/template から再生成する。fixture/golden test の `example.com/fixture` や `example.com/renamed` は移転可能性を検証するテスト入力であり、公開 package の import ではない。全 test/ABI/generation gate を再実行してから tag を作る。
+The project name is `GoWin-AFO`, recorded in `project.yaml`. The authoritative module path is `github.com/zzuf/GoWin-AFO` in `go.mod`. If the repository moves in the future, migrate handwritten source imports and documentation together, and regenerate generated files through their emitters/templates instead of replacing text directly. `example.com/fixture` and `example.com/renamed` in fixture/golden tests are inputs that verify relocation support, not imports used by published packages. Rerun all test/ABI/generation gates before creating a tag.
 
-`winapigen`、`winapisource`、`winapicoverage`、`winapiverify`、`abi-oracle` は GoWin-AFO 内の tool 名として維持する。Go package、native symbol、source ID、artifact 名も表示名の統一だけでは変更しない。
+Keep `winapigen`, `winapisource`, `winapicoverage`, `winapiverify`, and `abi-oracle` as tool names within GoWin-AFO. Do not change Go packages, native symbols, source IDs, or artifact names merely to align display names.
 
-## JSON schema の識別子
+## JSON schema identifiers
 
-schema の `$id` は仮ローカルドメインから、この repository 内の対応ファイルの raw URL へ移行した。外部 validator の登録や `$ref` に旧 ID を指定している場合は、以下の URL へ更新する。`schemaVersion: 1` とデータ形式・検証制約は変更していない。
+Schema `$id` values have migrated from a temporary local domain to the raw URLs of their corresponding files in this repository. Update external validator registrations or `$ref` values that use the old IDs to the URLs below. `schemaVersion: 1`, data formats, and validation constraints are unchanged.
 
 | Schema | `$id` |
 |---|---|
@@ -49,6 +49,6 @@ schema の `$id` は仮ローカルドメインから、この repository 内の
 | ABI oracle manifest | `https://raw.githubusercontent.com/zzuf/GoWin-AFO/main/tools/abi-oracle/schema/manifest.schema.json` |
 | ABI oracle result | `https://raw.githubusercontent.com/zzuf/GoWin-AFO/main/tools/abi-oracle/schema/result.schema.json` |
 
-再現性が必要な検証では、この可変ブランチの URL から実行時に取得するのではなく、対象 commit の checkout 内にある schema を使う。
+For reproducible validation, use the schemas in a checkout of the target commit instead of fetching them at runtime from these mutable branch URLs.
 
-GitHub 認証は Git credential manager、SSH、または GitHub CLI で設定する。token を source、remote URL、ログへ埋め込まない。CI の checkout 認証情報は後続コマンドへ永続化しない。
+Configure GitHub authentication through Git Credential Manager, SSH, or the GitHub CLI. Do not embed tokens in source, remote URLs, or logs. Do not persist CI checkout credentials for subsequent commands.
