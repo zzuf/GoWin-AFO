@@ -1,6 +1,7 @@
 # Pinned inputs are fetched and verified; licensed SDK artifacts are not vendored.
 /sources/cache/
 /sources/staging/
+/sources/staging-*/
 /*.nupkg
 /*.registration.json
 /*.catalog.json

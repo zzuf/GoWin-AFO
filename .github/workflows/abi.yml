@@ -51,6 +51,10 @@ jobs:
           cache-dependency-path: go.sum
       - name: Test oracle generator and comparator
         run: go test ./tools/abi-oracle/...
+      - name: Test MSVC setup
+        if: matrix.goarch == 'amd64'
+        shell: pwsh
+        run: ./tools/ci/setup-msvc.Tests.ps1
       - name: Generate target probe
         shell: pwsh
         run: >-
@@ -61,7 +65,7 @@ jobs:
       - name: Compile with MSVC/clang-cl and Windows SDK 10.0.26100.0
         shell: cmd
         run: |
-          call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.vcvars }} 10.0.26100.0
+          call tools\ci\setup-msvc.cmd ${{ matrix.vcvars }} 10.0.26100.0
           if errorlevel 1 exit /b 1
           if "${{ matrix.execute }}"=="true" (
             cl /nologo /std:c++17 /EHsc /W4 /WX /permissive- /utf-8 /Fe:tools\abi-oracle\out\probe-${{ matrix.goarch }}.exe tools\abi-oracle\out\probe-${{ matrix.goarch }}.cpp
